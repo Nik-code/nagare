@@ -218,6 +218,105 @@ THEME_COLOR(danger, 0xa3301a, 0xff9a7a)
     return button;
 }
 
++ (NSButton*)glassButton:(NSString*)title target:(id)target action:(SEL)action
+{
+    NSButton* button = [NSButton buttonWithTitle:title target:target action:action];
+    button.bezelStyle = NSBezelStyleGlass;
+    button.translatesAutoresizingMaskIntoConstraints = NO;
+    return button;
+}
+
++ (NSView*)statWithTitle:(NSString*)title value:(NSTextField*)value
+{
+    NSTextField* label = [self labelWithFont:[NSFont systemFontOfSize:12] color:self.foreground];
+    label.stringValue = title;
+    NSStackView* stack = [NSStackView stackViewWithViews:@[ label, value ]];
+    stack.orientation = NSUserInterfaceLayoutOrientationVertical;
+    stack.alignment = NSLayoutAttributeLeading;
+    stack.spacing = 2;
+    return stack;
+}
+
++ (NSTextField*)hintField:(NSString*)text
+{
+    NSTextField* field = [self labelWithFont:[NSFont systemFontOfSize:12] color:self.foreground];
+    field.stringValue = text;
+    return field;
+}
+
++ (NSView*)rowWithTitle:(NSString*)title hintField:(NSTextField*)hintField control:(NSView*)control height:(CGFloat)height
+{
+    NSTextField* titleField = [self labelWithFont:[NSFont systemFontOfSize:14 weight:NSFontWeightMedium] color:self.bright];
+    titleField.stringValue = title;
+    NSStackView* text = [NSStackView stackViewWithViews:hintField != nil ? @[ titleField, hintField ] : @[ titleField ]];
+    text.orientation = NSUserInterfaceLayoutOrientationVertical;
+    text.alignment = NSLayoutAttributeLeading;
+    text.spacing = 2;
+    text.translatesAutoresizingMaskIntoConstraints = NO;
+
+    NSView* line = [[NSView alloc] initWithFrame:NSZeroRect];
+    line.translatesAutoresizingMaskIntoConstraints = NO;
+    NSBox* hairline = [[NSBox alloc] initWithFrame:NSZeroRect];
+    hairline.boxType = NSBoxSeparator;
+    hairline.translatesAutoresizingMaskIntoConstraints = NO;
+    control.translatesAutoresizingMaskIntoConstraints = NO;
+    [line addSubview:hairline];
+    [line addSubview:text];
+    [line addSubview:control];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [line.heightAnchor constraintEqualToConstant:height],
+        [hairline.topAnchor constraintEqualToAnchor:line.topAnchor],
+        [hairline.leadingAnchor constraintEqualToAnchor:line.leadingAnchor],
+        [hairline.trailingAnchor constraintEqualToAnchor:line.trailingAnchor],
+        [text.leadingAnchor constraintEqualToAnchor:line.leadingAnchor],
+        [text.centerYAnchor constraintEqualToAnchor:line.centerYAnchor],
+        [control.trailingAnchor constraintEqualToAnchor:line.trailingAnchor],
+        [control.centerYAnchor constraintEqualToAnchor:line.centerYAnchor],
+        [text.trailingAnchor constraintLessThanOrEqualToAnchor:control.leadingAnchor constant:-16],
+    ]];
+    return line;
+}
+
++ (NSScrollView*)scrollViewWithDocument:(NSView*)document
+{
+    NSScrollView* scroll = [[NSScrollView alloc] initWithFrame:NSMakeRect(0, 0, 400, 240)];
+    scroll.documentView = document;
+    scroll.drawsBackground = NO;
+    scroll.borderType = NSNoBorder;
+    scroll.hasVerticalScroller = YES;
+    scroll.autohidesScrollers = YES;
+    scroll.scrollerStyle = NSScrollerStyleOverlay;
+    scroll.translatesAutoresizingMaskIntoConstraints = NO;
+    return scroll;
+}
+
++ (void)styleList:(NSTableView*)list rowHeight:(CGFloat)rowHeight
+{
+    list.style = NSTableViewStylePlain;
+    list.headerView = nil;
+    list.rowHeight = rowHeight;
+    list.intercellSpacing = NSZeroSize;
+    list.gridStyleMask = NSTableViewGridNone;
+    list.backgroundColor = NSColor.clearColor;
+    list.usesAlternatingRowBackgroundColors = NO;
+    list.columnAutoresizingStyle = NSTableViewFirstColumnOnlyAutoresizingStyle;
+}
+
++ (NSTextField*)valueField:(CGFloat)width formatter:(NSFormatter*)formatter target:(id)target action:(SEL)action
+{
+    NSTextField* field = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    field.bezeled = YES;
+    field.bezelStyle = NSTextFieldRoundedBezel;
+    field.alignment = NSTextAlignmentRight;
+    field.formatter = formatter;
+    field.target = target;
+    field.action = action;
+    field.translatesAutoresizingMaskIntoConstraints = NO;
+    [field.widthAnchor constraintEqualToConstant:width].active = YES;
+    return field;
+}
+
 + (NSTextField*)labelWithFont:(NSFont*)font color:(NSColor*)color
 {
     NSTextField* label = [NSTextField labelWithString:@""];
@@ -252,28 +351,6 @@ THEME_COLOR(danger, 0xa3301a, 0xff9a7a)
     SurfaceView* surface = [[SurfaceView alloc] initWithFrame:content.bounds];
     surface.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     [content addSubview:surface positioned:NSWindowBelow relativeTo:nil];
-}
-
-+ (void)styleAddWindow:(NSWindow*)window nameField:(NSTextField*)nameField
-{
-    window.titlebarAppearsTransparent = YES;
-    window.titleVisibility = NSWindowTitleHidden;
-    window.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
-
-    NSView* content = window.contentView;
-    SurfaceView* surface = [[SurfaceView alloc] initWithFrame:content.bounds];
-    surface.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-    [content addSubview:surface positioned:NSWindowBelow relativeTo:nil];
-
-    nameField.font = [self displayFontOfSize:20];
-
-    NSButton* action = (NSButton*)window.defaultButtonCell.controlView;
-    if ([action isKindOfClass:NSButton.class])
-    {
-        action.title = NSLocalizedString(@"Get", "Add window -> action");
-        action.bezelStyle = NSBezelStyleGlass;
-        action.bezelColor = Theme.accent;
-    }
 }
 
 @end
@@ -315,6 +392,30 @@ THEME_COLOR(danger, 0xa3301a, 0xff9a7a)
 @end
 
 @implementation ThemedRowView
+{
+    CGFloat _hairlineInset;
+    CGFloat _selectionInset;
+}
+
+- (instancetype)initWithFrame:(NSRect)frame
+{
+    if ((self = [super initWithFrame:frame]))
+    {
+        _hairlineInset = 24.0;
+        _selectionInset = 12.0;
+    }
+    return self;
+}
+
+- (instancetype)initWithHairlineInset:(CGFloat)hairlineInset selectionInset:(CGFloat)selectionInset
+{
+    if ((self = [super initWithFrame:NSZeroRect]))
+    {
+        _hairlineInset = hairlineInset;
+        _selectionInset = selectionInset;
+    }
+    return self;
+}
 
 - (NSBackgroundStyle)interiorBackgroundStyle
 {
@@ -323,15 +424,20 @@ THEME_COLOR(danger, 0xa3301a, 0xff9a7a)
 
 - (void)drawBackgroundInRect:(NSRect)dirtyRect
 {
+    if (_hairlineInset < 0.0)
+    {
+        return;
+    }
+
     [Theme.border setFill];
     CGFloat const scale = self.window.backingScaleFactor ?: 2.0;
-    NSRectFill(NSMakeRect(24.0, NSMaxY(self.bounds) - 1.0 / scale, NSWidth(self.bounds) - 48.0, 1.0 / scale));
+    NSRectFill(NSMakeRect(_hairlineInset, NSMaxY(self.bounds) - 1.0 / scale, NSWidth(self.bounds) - 2.0 * _hairlineInset, 1.0 / scale));
 }
 
 - (void)drawSelectionInRect:(NSRect)dirtyRect
 {
     [Theme.selected setFill];
-    [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(self.bounds, 12.0, 3.0) xRadius:12.0 yRadius:12.0] fill];
+    [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(self.bounds, _selectionInset, 3.0) xRadius:12.0 yRadius:12.0] fill];
 }
 
 - (void)drawSeparatorInRect:(NSRect)dirtyRect

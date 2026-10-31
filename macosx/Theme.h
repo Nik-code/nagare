@@ -48,17 +48,35 @@ typedef NS_ENUM(NSInteger, ThemeMode) {
 /// A borderless, bezel-free button showing a Tabler icon.
 + (NSButton*)iconButton:(NSString*)name target:(nullable id)target action:(nullable SEL)action;
 
+/// A Liquid Glass push button.
++ (NSButton*)glassButton:(NSString*)title target:(nullable id)target action:(nullable SEL)action;
+
 /// A plain text label.
 + (NSTextField*)labelWithFont:(NSFont*)font color:(NSColor*)color;
+
+/// A small label over a big number, for the stat rows.
++ (NSView*)statWithTitle:(NSString*)title value:(NSTextField*)value;
+
+/// One setting: title on the left with an optional hint under it, its control on the right, a hairline above.
++ (NSView*)rowWithTitle:(NSString*)title hintField:(nullable NSTextField*)hintField control:(NSView*)control height:(CGFloat)height;
+
+/// A quiet caption field for use as a row's hint.
++ (NSTextField*)hintField:(NSString*)text;
+
+/// A borderless, see-through scroll view around a list.
++ (NSScrollView*)scrollViewWithDocument:(NSView*)document;
+
+/// A headerless, gridless list on a clear background. Its rows should be ThemedRowViews.
++ (void)styleList:(NSTableView*)list rowHeight:(CGFloat)rowHeight;
+
+/// A value field for a row, with a rounded bezel.
++ (NSTextField*)valueField:(CGFloat)width formatter:(NSFormatter*)formatter target:(nullable id)target action:(nullable SEL)action;
 
 /// The image as it should look under `appearance`, ready to use as layer contents.
 + (nullable id)layerContents:(NSString*)imageName appearance:(NSAppearance*)appearance scale:(CGFloat)scale;
 
 /// Blends the titlebar into the window and puts the textured surface behind the content.
 + (void)styleWindow:(NSWindow*)window;
-
-/// The same for a dialog whose nib is laid out below a normal titlebar, with Outfit on its title and "Get" as its action.
-+ (void)styleAddWindow:(NSWindow*)window nameField:(NSTextField*)nameField;
 
 @end
 
@@ -68,6 +86,10 @@ typedef NS_ENUM(NSInteger, ThemeMode) {
 
 /// Row with a hairline under it and a quiet rounded selection.
 @interface ThemedRowView : NSTableRowView
+
+/// Defaults suit a full-width list: 24 for the hairline, 12 for the selection. A negative hairline inset draws none.
+- (instancetype)initWithHairlineInset:(CGFloat)hairlineInset selectionInset:(CGFloat)selectionInset;
+
 @end
 
 NS_ASSUME_NONNULL_END

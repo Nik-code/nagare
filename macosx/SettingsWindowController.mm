@@ -238,38 +238,7 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
 
 - (NSView*)rowWithTitle:(NSString*)title hint:(NSString*)hint control:(NSView*)control
 {
-    NSTextField* titleField = [Theme labelWithFont:[NSFont systemFontOfSize:14 weight:NSFontWeightMedium] color:Theme.bright];
-    titleField.stringValue = title;
-    NSTextField* hintField = [Theme labelWithFont:[NSFont systemFontOfSize:12] color:Theme.foreground];
-    hintField.stringValue = hint;
-    NSStackView* text = [NSStackView stackViewWithViews:@[ titleField, hintField ]];
-    text.orientation = NSUserInterfaceLayoutOrientationVertical;
-    text.alignment = NSLayoutAttributeLeading;
-    text.spacing = 2;
-    text.translatesAutoresizingMaskIntoConstraints = NO;
-
-    NSView* line = [[NSView alloc] initWithFrame:NSZeroRect];
-    line.translatesAutoresizingMaskIntoConstraints = NO;
-    NSBox* hairline = [[NSBox alloc] initWithFrame:NSZeroRect];
-    hairline.boxType = NSBoxSeparator;
-    hairline.translatesAutoresizingMaskIntoConstraints = NO;
-    control.translatesAutoresizingMaskIntoConstraints = NO;
-    [line addSubview:hairline];
-    [line addSubview:text];
-    [line addSubview:control];
-
-    [NSLayoutConstraint activateConstraints:@[
-        [line.heightAnchor constraintEqualToConstant:60],
-        [hairline.topAnchor constraintEqualToAnchor:line.topAnchor],
-        [hairline.leadingAnchor constraintEqualToAnchor:line.leadingAnchor],
-        [hairline.trailingAnchor constraintEqualToAnchor:line.trailingAnchor],
-        [text.leadingAnchor constraintEqualToAnchor:line.leadingAnchor],
-        [text.centerYAnchor constraintEqualToAnchor:line.centerYAnchor],
-        [control.trailingAnchor constraintEqualToAnchor:line.trailingAnchor],
-        [control.centerYAnchor constraintEqualToAnchor:line.centerYAnchor],
-        [text.trailingAnchor constraintLessThanOrEqualToAnchor:control.leadingAnchor constant:-16],
-    ]];
-    return line;
+    return [Theme rowWithTitle:title hintField:[Theme hintField:hint] control:control height:60];
 }
 
 - (NSSwitch*)switchForKey:(NSString*)key action:(SEL)action
@@ -284,9 +253,7 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
 
 - (NSButton*)buttonWithTitle:(NSString*)title action:(SEL)action target:(id)target
 {
-    NSButton* button = [NSButton buttonWithTitle:title target:target action:action];
-    button.bezelStyle = NSBezelStyleGlass;
-    return button;
+    return [Theme glassButton:title target:target action:action];
 }
 
 - (NSStackView*)stackOfRows:(NSArray<NSView*>*)rows
