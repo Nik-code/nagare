@@ -20,20 +20,16 @@ extern FilterSearchType const FilterSearchTypeTracker;
 
 extern NSInteger const kGroupFilterAllTag;
 
-@interface FilterBarController : NSTitlebarAccessoryViewController<NSMenuItemValidation>
+/// The row of filters under the header, with the transfer count at its end.
+@interface FilterBarController : NSViewController
 
 @property(nonatomic, readonly) NSArray<NSString*>* searchStrings;
 
 - (instancetype)init;
 
-- (IBAction)setFilter:(id)sender;
 - (void)switchFilter:(BOOL)right;
-- (IBAction)setSearchText:(id)sender;
-- (IBAction)setSearchType:(id)sender;
-- (IBAction)setGroupFilter:(id)sender;
 - (void)reset;
-- (void)focusSearchField;
-- (BOOL)isFocused;
+- (void)setTotalText:(NSString*)text;
 
 - (void)setCountAll:(NSUInteger)all
              active:(NSUInteger)active

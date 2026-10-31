@@ -24,17 +24,12 @@ extern CGFloat const kGroupSeparatorHeight;
 - (void)copy:(id)sender;
 - (void)paste:(id)sender;
 
-- (void)hoverEventBeganForView:(id)view;
-- (void)hoverEventEndedForView:(id)view;
 
 - (void)toggleGroupRowRatio;
 
 - (IBAction)toggleControlForTorrent:(id)sender;
 
-- (IBAction)displayTorrentActionPopover:(id)sender;
 
-- (void)togglePiecesBar;
-@property(nonatomic, readonly) CGFloat piecesBarPercent;
 
 - (void)selectAndScrollToRow:(NSInteger)row;
 
