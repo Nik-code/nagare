@@ -128,7 +128,7 @@ static NSString* const kTransferPlist = @"Transfers.plist";
 
 static NSString* const kWebsiteURL = @"https://transmissionbt.com/";
 static NSString* const kForumURL = @"https://forum.transmissionbt.com/";
-static NSString* const kGithubURL = @"https://github.com/transmission/transmission";
+static NSString* const kGithubURL = @"https://github.com/Nik-code/nagare";
 static NSString* const kDonateURL = @"https://transmissionbt.com/donate/";
 
 
@@ -684,7 +684,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     // These drove views that no longer exist.
     NSArray<NSString*>* removed = @[
         @"toggleSmallView:", @"togglePiecesBar:", @"toggleAvailabilityBar:", @"toggleStatusBar:", @"toggleFilterBar:", @"toggleToolbarShown:",
-        @"runToolbarCustomizationPalette:", @"linkDonate:"
+        @"runToolbarCustomizationPalette:", @"linkDonate:", @"linkForums:"
     ];
 
     __block void (^walk)(NSMenu*) = nil;
@@ -1080,7 +1080,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
         [alert addButtonWithTitle:NSLocalizedString(@"Quit", "Legal alert -> button")];
         alert.messageText = NSLocalizedString(@"Welcome to Nagare", "Legal alert -> title");
         alert.informativeText = NSLocalizedString(
-            @"Transmission is a file-sharing program."
+            @"Nagare is a file-sharing program."
              " When you run a torrent, its data will be made available to others by means of upload."
              " You and you alone are fully responsible for exercising proper judgement and abiding by your local laws.",
             "Legal alert -> message");

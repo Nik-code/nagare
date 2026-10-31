@@ -34,7 +34,8 @@ AboutWindowController* fAboutBoxInstance = nil;
 - (void)awakeFromNib
 {
     [super awakeFromNib];
-    self.fVersionField.stringValue = @(LONG_VERSION_STRING);
+    NSString* version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    self.fVersionField.stringValue = [NSString stringWithFormat:@"%@ (Transmission %s)", version, SHORT_VERSION_STRING];
 
     self.fCopyrightField.stringValue = [NSBundle.mainBundle localizedStringForKey:@"NSHumanReadableCopyright" value:nil
                                                                             table:@"InfoPlist"];

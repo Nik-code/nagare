@@ -1,14 +1,41 @@
 # Nagare
 
-Nagare (流れ, "flow") is a personal macOS torrent client built on [Transmission](https://transmissionbt.com). The engine is Transmission's `libtransmission`, unchanged. The Mac interface is new.
+Nagare (流れ, "flow") is a Liquid Glass torrent client for macOS. It is a redesigned fork of [Transmission](https://transmissionbt.com): the engine is Transmission's `libtransmission`, unchanged, and the Mac interface is new.
+
+![Nagare downloading public-domain films](docs/nagare/hero.png)
+
+A [short clip](https://github.com/Nik-code/nagare/releases/latest) is attached to the latest release.
 
 - **Swell header:** the water is a graph. The blue swell is the last ten minutes of download speed and the sand in front of it is upload.
-- **Droplet rows:** each dot is a share of the file. While seeding, the dots become a tide that rises with your share ratio and moves only during upload.
+- **Droplet rows:** each dot is a share of the file. While seeding, the dots become a tide that rises with your share ratio and moves only during upload. Seeds and peers sit beside the speed.
+- **One Add panel:** torrents and magnet links open the same glass panel. Rename the transfer or any file in place before it starts.
 - **Search:** sources are JSON files, so they are data and nothing in them is ever run. Internet Archive is built in, and more go in `~/Library/Application Support/Nagare/Search Sources`.
 - **qBittorrent import:** on first launch Nagare reads qBittorrent's records, adds its torrents paused and checks the files where they already are. qBittorrent itself is only read, never changed. Run it again from the File menu.
 - **Native:** Liquid Glass, Tabler icons, Outfit, with light paper and dark warm grey themes.
 
+<p>
+  <img src="docs/nagare/details-overview.png" width="32%" alt="Details overview">
+  <img src="docs/nagare/details-files.png" width="32%" alt="Details files">
+  <img src="docs/nagare/details-peers.png" width="32%" alt="Details peers">
+</p>
+
 Nagare has no auto-updater, so it never replaces itself with anything else.
+
+## Install
+
+Needs an Apple Silicon Mac on macOS 26 or later.
+
+1. Download the disk image from the [latest release](https://github.com/Nik-code/nagare/releases/latest) and drag Nagare to Applications.
+2. Open it once. macOS will refuse, because this build is not notarised yet.
+3. Go to System Settings, then Privacy & Security, and choose **Open Anyway**.
+
+Or clear the download flag from Terminal:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Nagare.app
+```
+
+On first launch Nagare asks macOS to make it the default for magnet links and torrent files. You can say no, and change it later in Settings.
 
 ## Building
 
@@ -18,118 +45,22 @@ Needs macOS 26 or later and Xcode 26.
 macosx/build-nagare.sh
 ```
 
-This builds an arm64 app and installs it to `/Applications/Nagare.app`, signed ad hoc.
+This builds an arm64 app and installs it to `/Applications/Nagare.app`, signed ad hoc. To make a release disk image instead:
+
+```bash
+macosx/package-nagare.sh 1.0.0
+```
 
 ## Updating from Transmission
 
 The `macosx` folder has diverged a lot, but `libtransmission` is untouched. Upstream engine and security fixes should merge cleanly; Mac interface changes will not.
 
+## How it was made
+
+Designed and built with [Claude](https://claude.com/claude-code), which wrote most of the code under my direction.
+
 ## Licence
 
-GPL, like Transmission. See [COPYING](COPYING). Built on Transmission by its authors and contributors. Icons are [Tabler](https://tabler.io/icons) (MIT). Outfit is under the SIL Open Font License, included in `macosx/Fonts`.
+GPL, like Transmission. See [COPYING](COPYING). Built on Transmission by its authors and contributors, and not affiliated with or endorsed by the Transmission project. Please report Nagare problems here, not to them. Icons are [Tabler](https://tabler.io/icons) (MIT). Outfit is under the SIL Open Font License, included in `macosx/Fonts`.
 
----
-
-Transmission's own README follows.
-
-## About
-
-Transmission is a fast, easy, and free BitTorrent client. It comes in several flavors:
-  * A native macOS GUI application
-  * GTK+ and Qt GUI applications for Linux, BSD, etc.
-  * A Qt-based Windows-compatible GUI application
-  * A headless daemon for servers and routers
-  * A web UI for remote controlling any of the above
-  
-Visit https://transmissionbt.com/ for more information.
-
-## Documentation
-
-[Transmission's documentation](docs/README.md) is currently out-of-date, but the team has recently begun a new project to update it and is looking for volunteers. If you're interested, please feel free to submit pull requests!
-
-## Command line interface notes
-
-Transmission is fully supported in transmission-remote, the preferred cli client.
-
-Three standalone tools to examine, create, and edit .torrent files exist: transmission-show, transmission-create, and transmission-edit, respectively.
-
-Prior to development of transmission-remote, the standalone client transmission-cli was created. Limited to a single torrent at a time, transmission-cli is deprecated and exists primarily to support older hardware dependent upon it. In almost all instances, transmission-remote should be used instead.
-
-Different distributions may choose to package any or all of these tools in one or more separate packages.
-
-## Building
-
-Transmission has an Xcode project file (Transmission.xcodeproj) for building in Xcode.
-
-For a more detailed description, and dependencies, visit [How to Build Transmission](docs/Building-Transmission.md) in docs
-
-### Building a Transmission release from the command line
-
-```bash
-$ tar xf transmission-4.0.6.tar.xz
-$ cd transmission-4.0.6
-# Use -DCMAKE_BUILD_TYPE=RelWithDebInfo to build optimized binary with debug information. (preferred)
-# Use -DCMAKE_BUILD_TYPE=Release to build full optimized binary.
-$ cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
-$ cd build
-$ cmake --build .
-$ sudo cmake --install .
-```
-
-### Building Transmission from the nightly builds
-
-Download a tarball from https://build.transmissionbt.com/job/trunk-linux/ and follow the steps from the previous section.
-
-If you're new to building programs from source code, this is typically easier than building from Git.
-
-### Building Transmission from Git (first time)
-
-```bash
-$ git clone --recurse-submodules https://github.com/transmission/transmission Transmission
-$ cd Transmission
-# Use -DCMAKE_BUILD_TYPE=RelWithDebInfo to build optimized binary with debug information. (preferred)
-# Use -DCMAKE_BUILD_TYPE=Release to build full optimized binary.
-$ cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
-$ cd build
-$ cmake --build .
-$ sudo cmake --install .
-```
-
-### Building Transmission from Git (updating)
-
-```bash
-$ cd Transmission/build
-$ cmake --build . -t clean
-$ git submodule foreach --recursive git clean -xfd
-$ git pull --rebase --prune
-$ git submodule update --init --recursive
-$ cmake --build .
-$ sudo cmake --install .
-```
-
-## Contributing
-
-### Code Style
-
-You would want to setup your editor to make use of the .clang-format file located in the root of this repository and the eslint/prettier rules in web/package.json.
-
-If for some reason you are unwilling or unable to do so, there is a shell script which you can use: `./code_style.sh`
-
-### Translations
-
-See [language translations](docs/Translating.md).
-
-## Sponsors
-
-<table>
- <tbody>
-  <tr>
-   <td align="center"><img alt="[MacStadium]" src="https://uploads-ssl.webflow.com/5ac3c046c82724970fc60918/5c019d917bba312af7553b49_MacStadium-developerlogo.png" height="30"/></td>
-   <td>macOS CI builds are running on a M1 Mac Mini provided by <a href="https://www.macstadium.com/company/opensource">MacStadium</a></td>
-  </tr>
-  <tr>
-   <td align="center"><img alt="[SignPath]" src="https://avatars.githubusercontent.com/u/34448643" height="30"/></td>
-   <td>Free code signing on Windows provided by <a href="https://signpath.io/?utm_source=foundation&utm_medium=github&utm_campaign=transmission">SignPath.io</a>, certificate by <a href="https://signpath.org/?utm_source=foundation&utm_medium=github&utm_campaign=transmission">SignPath Foundation</a></td>
-  </tr>
- </tbody>
-</table>
+Use it for things you have the right to share.
