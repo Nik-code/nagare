@@ -1,56 +1,35 @@
-# Contributing to Transmission
+# Contributing to Nagare
 
-Thanks for reading this and thinking about contributing! :tada:
+Thanks for thinking about contributing. Nagare is a small project, so these are guidelines rather than rules.
 
-This page is a list of suggestions and guidelines for contributing. They're not rules, just guidelines. Use your best judgment and feel free to propose changes to this document in a pull request.
+## Before you start
 
-# If you've got a change in mind
+Nagare is the macOS interface in `macosx`, built on Transmission's `libtransmission`.
 
-New people usually start volunteering because they have an itch they want to scratch. If you already know what you want to work on first, please comment in an existing issue, or [file a new issue](https://github.com/transmission/transmission/issues/new/choose) or [start a new discussion](https://github.com/transmission/transmission/discussions/new)! The maintainers will try to get you the information you need.
+- **Interface and Mac bugs** belong here. [File an issue](https://github.com/Nik-code/nagare/issues/new/choose) or open a pull request.
+- **Engine bugs** in downloading, peers or trackers usually belong to [Transmission](https://github.com/transmission/transmission). If you aren't sure, file an issue here first. Please don't report Nagare problems to the Transmission project.
 
-# If you're looking for ideas
+For anything bigger than a small fix, open an issue first so we can agree on the approach.
 
-If not, there are three labels in the issues tracker that can help:
+## Building
 
-- [`help wanted`](https://github.com/transmission/transmission/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) indicates that the issue is stuck and needs an outside developer. This is usually because some domain expertise is needed, e.g. for a specific platform or external API.
-- [`good first issue`](https://github.com/transmission/transmission/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) is a `pr-welcome` issue that is probably on the easier side to code.
-- [`pr welcome`](https://github.com/transmission/transmission/issues?q=is%3Aissue+is%3Aopen+label%3A%22pr+welcome%22) is for features that have been requested and which that the project doesn't have resources to implement, but would consider adding if a good PR was submitted.
+You need macOS 26 or later and Xcode 26.
 
-The project also welcomes changes that:
+```bash
+macosx/build-nagare.sh
+```
 
-- improve Transmission's compliance with [accepted BEPs](https://www.bittorrent.org/beps/bep_0000.html)
-- improve transfer speeds or peer communication
-- reduce the app's footprint in CPU or memory use
-- improve testing
-- simplify / shrink the existing codebase
-- remove deprecated macOS API use in the macOS client
-- remove deprecated GTK API use in the GTK client
-- reduce feature disparity between the different Transmission apps
-
-# Mechanics
-
-## Getting Started
-
-On macOS, Transmission is usually built with Xcode. Everywhere else, it's CMake + the development environment of your choice. If you need to add source files but don't have Xcode, a maintainer can help you to update the Xcode project file. See [README.md](README.md) for information on building Transmission from source.
+This builds an arm64 app and installs it to `/Applications/Nagare.app`. New source files need adding to both `Transmission.xcodeproj` and `macosx/CMakeLists.txt`.
 
 ## Style
 
-- Try to follow the [C++ core guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines).
-- Prefer memory-managed objects over raw pointers
-- Prefer `constexpr` over `#define`
-- Prefer `enum class` over `enum`
-- Prefer new-style headers, e.g. `<cstring>` over `<string.h>`
-- Fix any warnings in new code before merging
-- Run `./code_style.sh` on your code to ensure the whole codebase has consistent indentation.
+- Match the code around your change.
+- Keep the interface native: Liquid Glass, Tabler icons, and the colors and helpers in `macosx/Theme.h`.
+- Build new views in code rather than adding nibs.
+- Try not to change `libtransmission`, so upstream fixes keep merging cleanly.
+- Run `./code_style.sh` on your code and fix any warnings.
+- Use public domain content in screenshots, tests and examples.
 
-Note that Transmission existed in C for over a decade and those idioms don't change overnight. "Follow the C++ core guidelines" can be difficult when working with older code, and the maintainers will understand that when reviewing your PRs. :smiley:
+## Licence
 
-## Considerations
-
-- Prefer commonly-used tools over bespoke ones, e.g. use `std::list` instead of rolling your own list. This simplifies the code and makes it easier for other contributors to work with.
-- Please keep new code reasonably decoupled from the rest of the codebase for testability, either with DI or other methods. Be aware that much of the codebase was not written  with testability in mind. See peer-mgr-wishlist for one example of adding new, tested code into an existing untested module.
-- When adding advanced features, consider exposing them only in the config file instead of the UI.
-  - Transmission has a native macOS app, a native GTK app, and a Qt app. This is a strength in that each client can tightly integrate with its target environment, but it comes at the cost of making GUI changes very time-consuming. So consider, does this feature _need_ to be in the GUI?
-- New features must be reachable via the C API and the RPC/JSON API.
-  - The macOS and GTK clients still use the C API. Everything else, including a large number of 3rd party applications, use the RPC/JSON API. New features need to be usable via both of these.
-- KISS. Transmission is a _huge_ codebase so if you're trying to decide between to approaches to implement something, try the simpler one first.
+Contributions are made under the same terms as the rest of the project. See [COPYING](COPYING).
