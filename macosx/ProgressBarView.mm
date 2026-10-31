@@ -8,7 +8,7 @@
 #import "ProgressGradients.h"
 #import "TorrentTableView.h"
 #import "Torrent.h"
-#import "NSApplicationAdditions.h"
+#import "Theme.h"
 
 static CGFloat const kPiecesTotalPercent = 0.6;
 static NSInteger const kMaxPieces = 18 * 18;
@@ -19,9 +19,6 @@ static NSInteger const kMaxPieces = 18 * 18;
 
 @property(nonatomic, strong) NSBitmapImageRep* fPiecesBitmap;
 
-@property(nonatomic, readonly) NSColor* fBarBorderColor;
-@property(nonatomic, readonly) NSColor* fBluePieceColor;
-@property(nonatomic, readonly) NSColor* fBarMinimalBorderColor;
 
 @end
 
@@ -47,10 +44,6 @@ static NSInteger const kMaxPieces = 18 * 18;
                                                              colorSpaceName:NSCalibratedRGBColorSpace
                                                                 bytesPerRow:0
                                                                bitsPerPixel:0];
-
-        _fBluePieceColor = [NSColor colorWithCalibratedRed:0.0 green:0.4 blue:0.8 alpha:1.0];
-        _fBarBorderColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.2];
-        _fBarMinimalBorderColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.015];
     }
     return self;
 }
@@ -58,6 +51,10 @@ static NSInteger const kMaxPieces = 18 * 18;
 - (void)drawBarInRect:(NSRect)barRect forTableView:(TorrentTableView*)tableView withTorrent:(Torrent*)torrent
 {
     BOOL const minimal = [self.fDefaults boolForKey:@"SmallView"];
+
+    [NSGraphicsContext saveGraphicsState];
+    CGFloat const radius = minimal ? 4.0 : NSHeight(barRect) / 2.0;
+    [[NSBezierPath bezierPathWithRoundedRect:barRect xRadius:radius yRadius:radius] addClip];
 
     CGFloat const piecesBarPercent = tableView.piecesBarPercent;
     if (piecesBarPercent > 0.0)
@@ -75,9 +72,7 @@ static NSInteger const kMaxPieces = 18 * 18;
         [self drawRegularBar:barRect forTorrent:torrent];
     }
 
-    NSColor* borderColor = minimal ? self.fBarMinimalBorderColor : self.fBarBorderColor;
-    [borderColor set];
-    [NSBezierPath strokeRect:NSInsetRect(barRect, 0.5, 0.5)];
+    [NSGraphicsContext restoreGraphicsState];
 }
 
 - (void)drawRegularBar:(NSRect)barRect forTorrent:(Torrent*)torrent
@@ -165,14 +160,7 @@ static NSInteger const kMaxPieces = 18 * 18;
     // Fill a solid color bar for magnet links
     if (torrent.magnet)
     {
-        if (NSApp.darkMode)
-        {
-            [NSColor.controlColor set];
-        }
-        else
-        {
-            [[NSColor colorWithCalibratedWhite:1.0 alpha:minimal ? 0.25 : 1.0] set];
-        }
+        [[Theme.track colorWithAlphaComponent:minimal ? 0.25 : 1.0] set];
         NSRectFillUsingOperation(barRect, NSCompositingOperationSourceOver);
         return;
     }
@@ -192,7 +180,9 @@ static NSInteger const kMaxPieces = 18 * 18;
     NSIndexSet* previousFinishedIndexes = torrent.previousFinishedPieces;
     NSMutableIndexSet* finishedIndexes = [NSMutableIndexSet indexSet];
 
-    NSColor* const pieceBgColor = NSApp.darkMode ? NSColor.controlColor : NSColor.whiteColor;
+    NSColor* const pieceBgColor = [Theme.track colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+    NSColor* const pieceColorDone = [Theme.accent colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+    NSColor* const pieceColorNew = [Theme.bright colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
 
     for (int i = 0; i < pieceCount; i++)
     {
@@ -201,17 +191,17 @@ static NSInteger const kMaxPieces = 18 * 18;
         {
             if (previousFinishedIndexes && ![previousFinishedIndexes containsIndex:i])
             {
-                pieceColor = NSColor.orangeColor;
+                pieceColor = pieceColorNew;
             }
             else
             {
-                pieceColor = self.fBluePieceColor;
+                pieceColor = pieceColorDone;
             }
             [finishedIndexes addIndex:i];
         }
         else
         {
-            pieceColor = [pieceBgColor blendedColorWithFraction:piecesPercent[i] ofColor:self.fBluePieceColor];
+            pieceColor = [pieceBgColor blendedColorWithFraction:piecesPercent[i] ofColor:pieceColorDone];
         }
 
         //it's faster to just set color instead of checking previous color

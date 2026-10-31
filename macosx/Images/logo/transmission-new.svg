@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Nagi's ink tile and horizon lines, with the sun swapped for a download arrow. -->
+  <rect x="100" y="100" width="824" height="824" rx="190" fill="#161512"/>
+  <path d="M512 610 342 424H682Z" fill="#e9631a" stroke="#e9631a" stroke-width="44" stroke-linejoin="round"/>
+  <rect x="444" y="214" width="136" height="230" rx="22" fill="#e9631a"/>
+  <rect x="265" y="676" width="494" height="44" rx="4" fill="#ebebdf"/>
+  <rect x="372" y="767" width="280" height="44" rx="4" fill="#ebebdf"/>
+</svg>

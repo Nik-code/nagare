@@ -5,7 +5,6 @@
 #import <AppKit/AppKit.h>
 #import <Quartz/Quartz.h>
 
-#import <Sparkle/SUUpdaterDelegate.h>
 
 #include <libtransmission/transmission.h>
 
@@ -26,7 +25,7 @@ typedef NS_ENUM(NSUInteger, AddType) { //
 };
 
 @interface Controller
-    : NSObject<NSApplicationDelegate, NSMenuItemValidation, NSPopoverDelegate, NSSharingServiceDelegate, NSSharingServicePickerDelegate, NSSoundDelegate, NSToolbarDelegate, NSToolbarItemValidation, NSWindowDelegate, QLPreviewPanelDataSource, QLPreviewPanelDelegate, VDKQueueDelegate, SUUpdaterDelegate>
+    : NSObject<NSApplicationDelegate, NSMenuItemValidation, NSPopoverDelegate, NSSharingServiceDelegate, NSSharingServicePickerDelegate, NSSoundDelegate, NSToolbarDelegate, NSToolbarItemValidation, NSWindowDelegate, QLPreviewPanelDataSource, QLPreviewPanelDelegate, VDKQueueDelegate>
 
 - (void)openFiles:(NSArray<NSString*>*)filenames addType:(AddType)type forcePath:(NSString*)path;
 

@@ -2,7 +2,6 @@
 // It may be used under the MIT (SPDX: MIT) license.
 // License text can be found in the licenses/ folder.
 
-#import <Sparkle/Sparkle.h>
 #include <libtransmission/utils.h>
 
 #import "VDKQueue.h"
@@ -197,6 +196,11 @@ static NSString* const kWebUIURLFormat = @"http://localhost:%ld/";
 {
     [super awakeFromNib];
     self.fHasLoaded = YES;
+
+    //this build has no updater
+    self.fCheckForUpdatesLabel.hidden = YES;
+    self.fCheckForUpdatesButton.hidden = YES;
+    self.fCheckForUpdatesBetaButton.hidden = YES;
 
     self.window.restorationClass = [self class];
 

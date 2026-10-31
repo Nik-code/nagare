@@ -3,145 +3,67 @@
 // License text can be found in the licenses/ folder.
 
 #import "ProgressGradients.h"
-#import "NSApplicationAdditions.h"
+#import "Theme.h"
 
 @implementation ProgressGradients
 
 + (NSGradient*)progressWhiteGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.1 green:0.1 blue:0.1];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.95 green:0.95 blue:0.95];
-    }
+    return [[self class] gradientForColor:Theme.track];
 }
 
 + (NSGradient*)progressGrayGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.35 green:0.35 blue:0.35];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.7 green:0.7 blue:0.7];
-    }
+    return [[self class] gradientForColor:Theme.paused];
 }
 
 + (NSGradient*)progressLightGrayGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.2 green:0.2 blue:0.2];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.87 green:0.87 blue:0.87];
-    }
+    return [[self class] gradientForColor:Theme.hover];
 }
 
 + (NSGradient*)progressBlueGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.35 * 2.0 / 3.0 green:0.67 * 2.0 / 3.0 blue:0.98 * 2.0 / 3.0];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.35 green:0.67 blue:0.98];
-    }
+    return [[self class] gradientForColor:Theme.accent];
 }
 
 + (NSGradient*)progressDarkBlueGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.616 * 2.0 / 3.0 green:0.722 * 2.0 / 3.0 blue:0.776 * 2.0 / 3.0];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.616 green:0.722 blue:0.776];
-    }
+    return [[self class] gradientForColor:Theme.paused];
 }
 
 + (NSGradient*)progressGreenGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.44 * 2.0 / 3.0 green:0.89 * 2.0 / 3.0 blue:0.40 * 2.0 / 3.0];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.44 green:0.89 blue:0.40];
-    }
+    return [[self class] gradientForColor:Theme.seed];
 }
 
 + (NSGradient*)progressLightGreenGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.62 * 3.0 / 4.0 green:0.99 * 3.0 / 4.0 blue:0.58 * 3.0 / 4.0];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.62 green:0.99 blue:0.58];
-    }
+    return [[self class] gradientForColor:Theme.seed];
 }
 
 + (NSGradient*)progressDarkGreenGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.627 * 2.0 / 3.0 green:0.714 * 2.0 / 3.0 blue:0.639 * 2.0 / 3.0];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.627 green:0.714 blue:0.639];
-    }
+    return [[self class] gradientForColor:Theme.paused];
 }
 
 + (NSGradient*)progressRedGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.902 * 2.0 / 3.0 green:0.439 * 2.0 / 3.0 blue:0.451 * 2.0 / 3.0];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.902 green:0.439 blue:0.451];
-    }
+    return [[self class] gradientForColor:Theme.danger];
 }
 
 + (NSGradient*)progressYellowGradient
 {
-    if (NSApp.darkMode)
-    {
-        return [[self class] progressGradientForRed:0.933 * 0.8 green:0.890 * 0.8 blue:0.243 * 0.8];
-    }
-    else
-    {
-        return [[self class] progressGradientForRed:0.933 green:0.890 blue:0.243];
-    }
+    return [[self class] gradientForColor:Theme.check];
 }
 
 #pragma mark - Private
 
-+ (NSGradient*)progressGradientForRed:(CGFloat)redComponent green:(CGFloat)greenComponent blue:(CGFloat)blueComponent
++ (NSGradient*)gradientForColor:(NSColor*)color
 {
     CGFloat const alpha = [NSUserDefaults.standardUserDefaults boolForKey:@"SmallView"] ? 0.27 : 1.0;
-
-    NSColor* baseColor = [NSColor colorWithCalibratedRed:redComponent green:greenComponent blue:blueComponent alpha:alpha];
-
-    NSColor* color2 = [NSColor colorWithCalibratedRed:redComponent * 0.95 green:greenComponent * 0.95 blue:blueComponent * 0.95
-                                                alpha:alpha];
-
-    NSColor* color3 = [NSColor colorWithCalibratedRed:redComponent * 0.85 green:greenComponent * 0.85 blue:blueComponent * 0.85
-                                                alpha:alpha];
-
-    return [[NSGradient alloc] initWithColorsAndLocations:baseColor, 0.0, color2, 0.5, color3, 0.5, baseColor, 1.0, nil];
+    NSColor* flat = [[color colorUsingColorSpace:NSColorSpace.sRGBColorSpace] colorWithAlphaComponent:alpha];
+    return [[NSGradient alloc] initWithStartingColor:flat endingColor:flat];
 }
 
 @end

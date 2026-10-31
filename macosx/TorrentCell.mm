@@ -7,8 +7,15 @@
 #import "ProgressGradients.h"
 #import "Torrent.h"
 #import "NSImageAdditions.h"
+#import "Theme.h"
 
 @implementation TorrentCell
+
+- (void)awakeFromNib
+{
+    [super awakeFromNib];
+    self.fTorrentTitleField.font = [NSFont systemFontOfSize:13.0 weight:NSFontWeightMedium];
+}
 
 - (void)drawRect:(NSRect)dirtyRect
 {

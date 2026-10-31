@@ -161,7 +161,6 @@ target_sources(${TR_NAME}-mac
         ShareTorrentFileHelper.mm
         SmallTorrentCell.h
         SmallTorrentCell.mm
-        SparkleProxy.mm
         StatsWindowController.h
         StatsWindowController.mm
         StatusBarController.h
@@ -170,6 +169,8 @@ target_sources(${TR_NAME}-mac
         Toolbar.mm
         Torrent.h
         Torrent.mm
+        Theme.h
+        Theme.mm
         TorrentCell.h
         TorrentCell.mm
         TorrentCellActionButton.h
@@ -192,8 +193,6 @@ target_sources(${TR_NAME}-mac
         URLSheetWindowController.mm
         Utils.h
         Utils.mm
-        VersionComparator.h
-        VersionComparator.mm
         WebSeedTableView.h
         WebSeedTableView.mm)
 
@@ -397,22 +396,16 @@ tr_target_xib_files(${TR_NAME}-mac
     ${XIB_FILES}
     ${BASE_XIB_FILES})
 
-find_library(SPARKLE_FRAMEWORK Sparkle
-    PATHS ${CMAKE_CURRENT_SOURCE_DIR}
-    NO_DEFAULT_PATHS)
-
 target_link_libraries(${TR_NAME}-mac
     PRIVATE
         ${TR_NAME}
         fmt::fmt-header-only
         vdkqueue
-        ${SPARKLE_FRAMEWORK}
         "-framework AppKit"
         "-framework Carbon"
         "-framework Foundation"
         "-framework Quartz"
         "-framework Security"
-        "-weak_framework Sparkle"
         "-weak_framework UserNotifications")
 
 if(NOT CMAKE_GENERATOR STREQUAL Xcode)

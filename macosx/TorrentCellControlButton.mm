@@ -6,6 +6,7 @@
 #import "TorrentTableView.h"
 #import "Torrent.h"
 #import "TorrentCell.h"
+#import "Theme.h"
 
 @interface TorrentCellControlButton ()
 @property(nonatomic) NSTrackingArea* fTrackingArea;
@@ -67,28 +68,27 @@
 
 - (void)updateImage
 {
-    NSImage* controlImage;
+    NSString* symbol = @"play.fill";
     Torrent* torrent = [self.torrentTableView itemAtRow:[self.torrentTableView rowForView:self]];
-    if (torrent.active)
+    if (torrent.active || (torrent.waitingToStart && !(NSApp.currentEvent.modifierFlags & NSEventModifierFlagOption)))
     {
-        controlImage = [NSImage imageNamed:[@"Pause" stringByAppendingString:self.controlImageSuffix]];
+        symbol = @"pause.fill";
     }
-    else
+    else if (NSApp.currentEvent.modifierFlags & NSEventModifierFlagOption)
     {
-        if (NSApp.currentEvent.modifierFlags & NSEventModifierFlagOption)
-        {
-            controlImage = [NSImage imageNamed:[@"ResumeNoWait" stringByAppendingString:self.controlImageSuffix]];
-        }
-        else if (torrent.waitingToStart)
-        {
-            controlImage = [NSImage imageNamed:[@"Pause" stringByAppendingString:self.controlImageSuffix]];
-        }
-        else
-        {
-            controlImage = [NSImage imageNamed:[@"Resume" stringByAppendingString:self.controlImageSuffix]];
-        }
+        symbol = @"forward.fill";
     }
-    self.image = controlImage;
+
+    NSColor* color = Theme.foreground;
+    if ([self.controlImageSuffix isEqualToString:@"Hover"])
+    {
+        color = Theme.bright;
+    }
+    else if ([self.controlImageSuffix isEqualToString:@"On"])
+    {
+        color = Theme.accent;
+    }
+    self.image = [Theme symbol:symbol color:color size:11.0];
 }
 
 - (void)updateTrackingAreas

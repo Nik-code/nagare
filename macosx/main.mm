@@ -8,11 +8,15 @@
 
 #include <libtransmission/utils.h>
 
+#import "Theme.h"
+
 int main(int argc, char** argv)
 {
     tr_lib_init();
 
     tr_locale_set_global("");
+
+    [Theme install];
 
     return NSApplicationMain(argc, (char const**)argv);
 }

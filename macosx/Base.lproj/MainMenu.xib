@@ -15,7 +15,7 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <window title="Transmission" allowsToolTipsWhenApplicationIsInactive="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="TransmissionWindow" animationBehavior="default" tabbingMode="disallowed" id="21" userLabel="Transmission">
+        <window title="Transmission new" allowsToolTipsWhenApplicationIsInactive="NO" restorable="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="TransmissionWindow" animationBehavior="default" tabbingMode="disallowed" id="21" userLabel="Transmission">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" topStrut="YES"/>
             <rect key="contentRect" x="71" y="712" width="480" height="269"/>
@@ -31,7 +31,7 @@
                             <rect key="frame" x="0.0" y="0.0" width="480" height="240"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="62" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" indentationMarkerFollowsCell="NO" autoresizesOutlineColumn="YES" outlineTableColumn="3093" id="3091" customClass="TorrentTableView">
+                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" rowHeight="62" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" indentationMarkerFollowsCell="NO" autoresizesOutlineColumn="YES" outlineTableColumn="3093" id="3091" customClass="TorrentTableView">
                                     <rect key="frame" x="0.0" y="0.0" width="480" height="240"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <size key="intercellSpacing" width="2" height="3"/>
@@ -183,7 +183,7 @@
                                                         <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7sy-Kk-M9Y">
                                                             <rect key="frame" x="63" y="30" width="344" height="13"/>
                                                             <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingMiddle" allowsUndo="NO" title="Progress" id="oSz-TE-8jj">
-                                                                <font key="font" metaFont="system" size="10"/>
+                                                                <font key="font" metaFont="system" size="11"/>
                                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
@@ -191,7 +191,7 @@
                                                         <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="J4v-0p-u4L">
                                                             <rect key="frame" x="63" y="1" width="344" height="13"/>
                                                             <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingMiddle" allowsUndo="NO" title="Status" id="lmp-Y3-ZQO">
-                                                                <font key="font" metaFont="system" size="10"/>
+                                                                <font key="font" metaFont="system" size="11"/>
                                                                 <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </textFieldCell>
@@ -233,27 +233,27 @@
                                                         <customView translatesAutoresizingMaskIntoConstraints="NO" id="Ifq-ub-ay4">
                                                             <rect key="frame" x="65" y="15" width="340" height="14"/>
                                                             <constraints>
-                                                                <constraint firstAttribute="height" constant="14" id="D7V-m1-heE"/>
+                                                                <constraint firstAttribute="height" constant="5" id="D7V-m1-heE"/>
                                                             </constraints>
                                                         </customView>
                                                     </subviews>
                                                     <constraints>
                                                         <constraint firstItem="FLl-ue-i20" firstAttribute="centerY" secondItem="7Ic-8y-f3v" secondAttribute="centerY" id="7iF-OP-ifv"/>
                                                         <constraint firstItem="WTV-L6-lc2" firstAttribute="leading" secondItem="FLl-ue-i20" secondAttribute="trailing" constant="3" id="8e4-oE-Kzh"/>
-                                                        <constraint firstItem="J4v-0p-u4L" firstAttribute="top" secondItem="Ifq-ub-ay4" secondAttribute="bottom" constant="1" id="AyP-y5-tmL"/>
+                                                        <constraint firstItem="J4v-0p-u4L" firstAttribute="top" secondItem="Ifq-ub-ay4" secondAttribute="bottom" constant="5" id="AyP-y5-tmL"/>
                                                         <constraint firstItem="Ifq-ub-ay4" firstAttribute="leading" secondItem="vYS-eL-CGb" secondAttribute="leading" id="Dyg-7e-eOb"/>
                                                         <constraint firstItem="kNl-5i-USx" firstAttribute="centerY" secondItem="Ifq-ub-ay4" secondAttribute="centerY" id="F2k-wy-sR2"/>
                                                         <constraint firstItem="WTV-L6-lc2" firstAttribute="centerY" secondItem="FLl-ue-i20" secondAttribute="centerY" id="FXq-kY-5ny"/>
                                                         <constraint firstItem="FLl-ue-i20" firstAttribute="leading" secondItem="7Ic-8y-f3v" secondAttribute="leading" id="Fu9-kh-dtb"/>
                                                         <constraint firstItem="Ifq-ub-ay4" firstAttribute="trailing" secondItem="7sy-Kk-M9Y" secondAttribute="trailing" id="KFR-7d-Sjr"/>
                                                         <constraint firstAttribute="trailing" secondItem="k5I-MN-hYk" secondAttribute="trailing" constant="8" id="NRQ-sA-ng6"/>
-                                                        <constraint firstItem="vYS-eL-CGb" firstAttribute="top" secondItem="7Ic-8y-f3v" secondAttribute="top" constant="3" id="QtZ-VZ-lRO"/>
+                                                        <constraint firstItem="vYS-eL-CGb" firstAttribute="top" secondItem="7Ic-8y-f3v" secondAttribute="top" constant="6" id="QtZ-VZ-lRO"/>
                                                         <constraint firstItem="Rxb-qW-x6p" firstAttribute="centerX" secondItem="WTV-L6-lc2" secondAttribute="centerX" id="Uyo-j3-TSH"/>
-                                                        <constraint firstItem="Ifq-ub-ay4" firstAttribute="top" secondItem="7sy-Kk-M9Y" secondAttribute="bottom" constant="1" id="XRq-cM-zeI"/>
+                                                        <constraint firstItem="Ifq-ub-ay4" firstAttribute="top" secondItem="7sy-Kk-M9Y" secondAttribute="bottom" constant="5" id="XRq-cM-zeI"/>
                                                         <constraint firstItem="Ifq-ub-ay4" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="vYS-eL-CGb" secondAttribute="trailing" id="b7f-KU-XuC"/>
                                                         <constraint firstItem="kNl-5i-USx" firstAttribute="leading" secondItem="Ifq-ub-ay4" secondAttribute="trailing" constant="14" id="b80-qd-DxN"/>
                                                         <constraint firstItem="vYS-eL-CGb" firstAttribute="leading" secondItem="WTV-L6-lc2" secondAttribute="trailing" constant="16" id="bhS-IK-CO7"/>
-                                                        <constraint firstItem="7sy-Kk-M9Y" firstAttribute="top" secondItem="vYS-eL-CGb" secondAttribute="bottom" constant="1" id="fDS-sV-lfi"/>
+                                                        <constraint firstItem="7sy-Kk-M9Y" firstAttribute="top" secondItem="vYS-eL-CGb" secondAttribute="bottom" constant="2" id="fDS-sV-lfi"/>
                                                         <constraint firstItem="k5I-MN-hYk" firstAttribute="leading" secondItem="kNl-5i-USx" secondAttribute="trailing" constant="3" id="fsy-23-flK"/>
                                                         <constraint firstItem="J4v-0p-u4L" firstAttribute="trailing" secondItem="Ifq-ub-ay4" secondAttribute="trailing" id="j5C-sr-mIK"/>
                                                         <constraint firstItem="7sy-Kk-M9Y" firstAttribute="leading" secondItem="Ifq-ub-ay4" secondAttribute="leading" id="utw-yR-w0F"/>
@@ -519,19 +519,13 @@
         </window>
         <menu systemMenu="main" id="29" userLabel="MainMenu">
             <items>
-                <menuItem title="Transmission" id="56">
-                    <menu key="submenu" title="Transmission" systemMenu="apple" id="57">
+                <menuItem title="Transmission new" id="56">
+                    <menu key="submenu" title="Transmission new" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About Transmission" id="58">
+                            <menuItem title="About Transmission new" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="showAboutWindow:" target="206" id="1927"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Check for Update…" tag="1234" id="975">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="checkForUpdates:" target="1812" id="1814"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Donate…" tag="5678" id="3212">
@@ -557,7 +551,7 @@
                             <menuItem isSeparatorItem="YES" id="144">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Hide Transmission" keyEquivalent="h" id="134">
+                            <menuItem title="Hide Transmission new" keyEquivalent="h" id="134">
                                 <connections>
                                     <action selector="hide:" target="-2" id="152"/>
                                 </connections>
@@ -576,7 +570,7 @@
                             <menuItem isSeparatorItem="YES" id="149">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Quit Transmission" keyEquivalent="q" id="136">
+                            <menuItem title="Quit Transmission new" keyEquivalent="q" id="136">
                                 <connections>
                                     <action selector="terminate:" target="-2" id="614"/>
                                 </connections>
@@ -987,7 +981,7 @@ CA
                             <menuItem isSeparatorItem="YES" id="1799">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Transmission" secondaryImage="house" catalog="system" keyEquivalent="1" id="1696">
+                            <menuItem title="Transmission new" secondaryImage="house" catalog="system" keyEquivalent="1" id="1696">
                                 <connections>
                                     <action selector="showMainWindow:" target="206" id="1702"/>
                                 </connections>
@@ -1201,7 +1195,6 @@ CA
                 </menuItem>
             </items>
         </menu>
-        <customObject id="1812" userLabel="SUUpdater" customClass="SUUpdater"/>
         <userDefaultsController representsSharedInstance="YES" id="1815" userLabel="Shared Defaults"/>
     </objects>
     <resources>

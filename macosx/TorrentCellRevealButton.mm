@@ -5,6 +5,7 @@
 #import "TorrentCellRevealButton.h"
 #import "TorrentTableView.h"
 #import "TorrentCell.h"
+#import "Theme.h"
 
 @interface TorrentCellRevealButton ()
 @property(nonatomic) NSTrackingArea* fTrackingArea;
@@ -58,8 +59,16 @@
 
 - (void)updateImage
 {
-    NSImage* revealImage = [NSImage imageNamed:self.revealImageString];
-    self.image = revealImage;
+    NSColor* color = Theme.foreground;
+    if ([self.revealImageString isEqualToString:@"RevealHover"])
+    {
+        color = Theme.bright;
+    }
+    else if ([self.revealImageString isEqualToString:@"RevealOn"])
+    {
+        color = Theme.accent;
+    }
+    self.image = [Theme symbol:@"folder" color:color size:11.0];
     self.needsDisplay = YES;
 }
 

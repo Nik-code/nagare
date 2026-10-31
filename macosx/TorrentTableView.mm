@@ -14,6 +14,7 @@
 #import "SmallTorrentCell.h"
 #import "GroupCell.h"
 #import "TorrentGroup.h"
+#import "Theme.h"
 #import "GroupsController.h"
 #import "NSImageAdditions.h"
 #import "TorrentCellActionButton.h"
@@ -191,7 +192,12 @@ static NSTimeInterval const kToggleProgressSeconds = 0.175;
 
 - (BOOL)usesAlternatingRowBackgroundColors
 {
-    return ![self.fDefaults boolForKey:@"SmallView"];
+    return NO;
+}
+
+- (NSTableRowView*)outlineView:(NSOutlineView*)outlineView rowViewForItem:(id)item
+{
+    return [[ThemedRowView alloc] init];
 }
 
 - (BOOL)isGroupCollapsed:(NSInteger)value

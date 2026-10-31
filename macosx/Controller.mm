@@ -5,7 +5,6 @@
 @import Carbon;
 @import UserNotifications;
 
-@import Sparkle;
 
 #include <atomic> /* atomic, atomic_fetch_add_explicit, memory_order_relaxed */
 
@@ -40,6 +39,7 @@
 #import "GroupToolbarItem.h"
 #import "ShareToolbarItem.h"
 #import "ShareTorrentFileHelper.h"
+#import "Theme.h"
 #import "Toolbar.h"
 #import "BlocklistDownloader.h"
 #import "StatusBarController.h"
@@ -53,7 +53,6 @@
 #import "NSStringAdditions.h"
 #import "ExpandedPathToPathTransformer.h"
 #import "ExpandedPathToIconTransformer.h"
-#import "VersionComparator.h"
 #import "PowerManager.h"
 
 typedef NSString* ToolbarItemIdentifier NS_TYPED_EXTENSIBLE_ENUM;
@@ -109,7 +108,7 @@ typedef NS_ENUM(NSUInteger, SortOrderTag) { //
 
 static NSString* const kTorrentTableViewDataType = @"TorrentTableViewDataType";
 
-static CGFloat const kRowHeightRegular = 62.0;
+static CGFloat const kRowHeightRegular = 68.0;
 static CGFloat const kRowHeightSmall = 22.0;
 
 static CGFloat const kStatusBarHeight = 24.0;
@@ -608,7 +607,6 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
         tr_sessionSetRPCCallback(_fLib, rpcCallback, (__bridge void*)(self));
 
-        [SUUpdater sharedUpdater].delegate = self;
         _fQuitRequested = NO;
 
         _fPauseOnLaunch = (GetCurrentKeyModifiers() & (optionKey | rightOptionKey)) != 0;
@@ -619,6 +617,9 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 - (void)awakeFromNib
 {
     [super awakeFromNib];
+
+    [Theme applySavedMode];
+    [Theme addThemeMenu];
 
     Toolbar* toolbar = [[Toolbar alloc] initWithIdentifier:@"TRMainToolbar"];
     toolbar.delegate = self;
@@ -643,6 +644,9 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     self.fTableView.rowHeight = small ? kRowHeightSmall : kRowHeightRegular;
     self.fTableView.usesAutomaticRowHeights = NO;
     self.fTableView.floatsGroupRows = YES;
+    self.fTableView.backgroundColor = Theme.panel;
+    self.fTableView.style = NSTableViewStyleFullWidth;
+    self.fTableView.gridStyleMask = NSTableViewGridNone;
     //self.fTableView.usesAlternatingRowBackgroundColors = !small;
 
     self.fWindow.movableByWindowBackground = YES;
@@ -5561,16 +5565,3 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 @end
 
-@implementation Controller (SUUpdaterDelegate)
-
-- (void)updaterWillRelaunchApplication:(SUUpdater*)updater
-{
-    self.fQuitRequested = YES;
-}
-
-- (nullable id<SUVersionComparison>)versionComparatorForUpdater:(SUUpdater*)updater
-{
-    return [VersionComparator new];
-}
-
-@end

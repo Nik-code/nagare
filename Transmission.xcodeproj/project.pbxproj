@@ -92,6 +92,7 @@
 		A207503512BEAD9C00F70985 /* select.c in Sources */ = {isa = PBXBuildFile; fileRef = A207503412BEAD9C00F70985 /* select.c */; };
 		A207503712BEADA200F70985 /* poll.c in Sources */ = {isa = PBXBuildFile; fileRef = A207503612BEADA200F70985 /* poll.c */; };
 		A20750B812BEB66900F70985 /* bufferevent_ratelim.c in Sources */ = {isa = PBXBuildFile; fileRef = A20750B712BEB66900F70985 /* bufferevent_ratelim.c */; };
+		B4584969FFAB5DCD72DB5DEF /* Theme.mm in Sources */ = {isa = PBXBuildFile; fileRef = DC5CD3A96168A015FF90A7E0 /* Theme.mm */; };
 		A2085DDC0C53BC74000BC3B7 /* AboutWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */; };
 		A209EAC61142CF28002B02D1 /* InfoActivityViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A209EAC31142CF28002B02D1 /* InfoActivityViewController.mm */; };
 		A209EAC71142CF28002B02D1 /* InfoGeneralViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A209EAC51142CF28002B02D1 /* InfoGeneralViewController.mm */; };
@@ -153,8 +154,6 @@
 		A2451E6A16ACE4EB00586E0E /* FileRenameSheetController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A2451E6816ACE4EB00586E0E /* FileRenameSheetController.xib */; };
 		A24621410C769D0900088E81 /* session-thread.h in Headers */ = {isa = PBXBuildFile; fileRef = A24621350C769CF400088E81 /* session-thread.h */; };
 		A24621420C769D0900088E81 /* session-thread.cc in Sources */ = {isa = PBXBuildFile; fileRef = A24621360C769CF400088E81 /* session-thread.cc */; };
-		A24F19080A3A790800C9C145 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A24F19070A3A790800C9C145 /* Sparkle.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		A24F19210A3A796800C9C145 /* Sparkle.framework in Copy Files to Frameworks */ = {isa = PBXBuildFile; fileRef = A24F19070A3A790800C9C145 /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A254853C0EB66CD4004539DA /* codelength.h in Headers */ = {isa = PBXBuildFile; fileRef = A25485390EB66CBB004539DA /* codelength.h */; };
 		A256588D0A9A695400E8A03B /* MessageWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A256588B0A9A695400E8A03B /* MessageWindowController.mm */; };
 		A257C1820CAD3003004E121C /* PeerTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = A257C1800CAD3003004E121C /* PeerTableView.mm */; };
@@ -178,7 +177,6 @@
 		A267927C130DFF2700CB7464 /* libutp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A2E38544130DFEE3001F501B /* libutp.a */; };
 		A2679294130E00A000CB7464 /* tr-utp.cc in Sources */ = {isa = PBXBuildFile; fileRef = A2679292130E00A000CB7464 /* tr-utp.cc */; };
 		A2679295130E00A000CB7464 /* tr-utp.h in Headers */ = {isa = PBXBuildFile; fileRef = A2679293130E00A000CB7464 /* tr-utp.h */; };
-		A267C2842E9F2B23003B87D7 /* Transmission_Tahoe.icon in Resources */ = {isa = PBXBuildFile; fileRef = A267C2832E9F2B23003B87D7 /* Transmission_Tahoe.icon */; };
 		A26AF21A0D2DA35A00FF7140 /* FileOutlineController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A26AF2190D2DA35A00FF7140 /* FileOutlineController.mm */; };
 		A26AF27E0D2DBDDF00FF7140 /* AddWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = A26AF27C0D2DBDDF00FF7140 /* AddWindow.xib */; };
 		A26AF2840D2DC27C00FF7140 /* AddWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A26AF2830D2DC27C00FF7140 /* AddWindowController.mm */; };
@@ -398,8 +396,6 @@
 		C82B30312953337B0001BD6E /* NSDataAdditions.mm in Sources */ = {isa = PBXBuildFile; fileRef = C809AEE6291ECFD000BFDBE1 /* NSDataAdditions.mm */; };
 		C83B17212B7341BC00B2EAE4 /* tr-assert.cc in Sources */ = {isa = PBXBuildFile; fileRef = C1425B321EE9C5EA001DB85F /* tr-assert.cc */; };
 		C843FC8429C51B9400491854 /* utils.mm in Sources */ = {isa = PBXBuildFile; fileRef = C843FC8329C51B9400491854 /* utils.mm */; };
-		C843FC8729C8B40800491854 /* VersionComparator.mm in Sources */ = {isa = PBXBuildFile; fileRef = C843FC8629C8B40800491854 /* VersionComparator.mm */; };
-		C86BCD9928228A9600F45599 /* SparkleProxy.mm in Sources */ = {isa = PBXBuildFile; fileRef = C86BCD9828228A9600F45599 /* SparkleProxy.mm */; };
 		C87369652809984200573C90 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C87369642809984200573C90 /* UserNotifications.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		C8748D8A29891EA100D9E979 /* suffixes_dafsa.h in Headers */ = {isa = PBXBuildFile; fileRef = C8748D8929891EA100D9E979 /* suffixes_dafsa.h */; };
 		C88771AD2803EE7B005C7523 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C88771A92803EE42005C7523 /* libz.tbd */; };
@@ -632,7 +628,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A24F19210A3A796800C9C145 /* Sparkle.framework in Copy Files to Frameworks */,
 			);
 			name = "Copy Files to Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -836,7 +831,7 @@
 		6A044CBD8C049AFCBD4DB411 /* block-info.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; path = "block-info.h"; sourceTree = "<group>"; };
 		888A256631B3DE536FEB8B01 /* tr-strbuf.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = "tr-strbuf.h"; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Transmission.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Transmission.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Transmission new.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Transmission new.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A200B8390A2263BA007BBB1E /* InfoWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoWindowController.h; sourceTree = "<group>"; };
 		A200B83A0A2263BA007BBB1E /* InfoWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = InfoWindowController.mm; sourceTree = "<group>"; };
 		A20152790D1C26EB0081714F /* torrent-ctor.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "torrent-ctor.cc"; sourceTree = "<group>"; };
@@ -864,6 +859,8 @@
 		A207503412BEAD9C00F70985 /* select.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = select.c; sourceTree = "<group>"; };
 		A207503612BEADA200F70985 /* poll.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = poll.c; sourceTree = "<group>"; };
 		A20750B712BEB66900F70985 /* bufferevent_ratelim.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = bufferevent_ratelim.c; sourceTree = "<group>"; };
+		311D0ADD3DC91E107F0DD0FA /* Theme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Theme.h; sourceTree = "<group>"; };
+		DC5CD3A96168A015FF90A7E0 /* Theme.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Theme.mm; sourceTree = "<group>"; };
 		A2085DD90C53BC74000BC3B7 /* AboutWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AboutWindowController.h; sourceTree = "<group>"; };
 		A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AboutWindowController.mm; sourceTree = "<group>"; };
 		A209EAC21142CF28002B02D1 /* InfoActivityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoActivityViewController.h; sourceTree = "<group>"; };
@@ -943,7 +940,6 @@
 		A24621350C769CF400088E81 /* session-thread.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; path = "session-thread.h"; sourceTree = "<group>"; };
 		A24621360C769CF400088E81 /* session-thread.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "session-thread.cc"; sourceTree = "<group>"; };
 		A247A442114C701800547DFC /* InfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoViewController.h; sourceTree = "<group>"; };
-		A24F19070A3A790800C9C145 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		A25485390EB66CBB004539DA /* codelength.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = codelength.h; sourceTree = "<group>"; };
 		A256588A0A9A695400E8A03B /* MessageWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MessageWindowController.h; sourceTree = "<group>"; };
 		A256588B0A9A695400E8A03B /* MessageWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MessageWindowController.mm; sourceTree = "<group>"; };
@@ -975,7 +971,6 @@
 		A263CFBF10DD67670038DE27 /* InfoTextField.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = InfoTextField.mm; sourceTree = "<group>"; };
 		A2679292130E00A000CB7464 /* tr-utp.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = "tr-utp.cc"; sourceTree = "<group>"; };
 		A2679293130E00A000CB7464 /* tr-utp.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; path = "tr-utp.h"; sourceTree = "<group>"; };
-		A267C2832E9F2B23003B87D7 /* Transmission_Tahoe.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = Transmission_Tahoe.icon; path = Images/Transmission_Tahoe.icon; sourceTree = "<group>"; };
 		A26AF1050D2855FC00FF7140 /* ru */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		A26AF1070D2855FC00FF7140 /* ru */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A26AF2180D2DA35A00FF7140 /* FileOutlineController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileOutlineController.h; sourceTree = "<group>"; };
@@ -1376,9 +1371,6 @@
 		C809AEE6291ECFD000BFDBE1 /* NSDataAdditions.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NSDataAdditions.mm; sourceTree = "<group>"; };
 		C81E411127F5BABD00652F56 /* CocoaCompatibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CocoaCompatibility.h; sourceTree = "<group>"; };
 		C843FC8329C51B9400491854 /* utils.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = utils.mm; sourceTree = "<group>"; };
-		C843FC8529C8B40800491854 /* VersionComparator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VersionComparator.h; sourceTree = "<group>"; };
-		C843FC8629C8B40800491854 /* VersionComparator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = VersionComparator.mm; sourceTree = "<group>"; };
-		C86BCD9828228A9600F45599 /* SparkleProxy.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SparkleProxy.mm; sourceTree = "<group>"; };
 		C87369642809984200573C90 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		C8748D8929891EA100D9E979 /* suffixes_dafsa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = suffixes_dafsa.h; path = "third-party/suffixes_dafsa.h"; sourceTree = SOURCE_ROOT; };
 		C88771A92803EE42005C7523 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -1486,7 +1478,6 @@
 				C87369652809984200573C90 /* UserNotifications.framework in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				4D1838DD09DEC0E80047D688 /* libtransmission.a in Frameworks */,
-				A24F19080A3A790800C9C145 /* Sparkle.framework in Frameworks */,
 				C88771B52803EEB1005C7523 /* libiconv.tbd in Frameworks */,
 				55869926257074EC00F77A43 /* libcurl.tbd in Frameworks */,
 				A2E669790F5B8E5A00B4251A /* Security.framework in Frameworks */,
@@ -1666,11 +1657,8 @@
 			isa = PBXGroup;
 			children = (
 				29B97316FDCFA39411CA2CEA /* main.mm */,
-				C86BCD9828228A9600F45599 /* SparkleProxy.mm */,
 				4DF0C5AA0899190500DD8943 /* Controller.h */,
 				4DF0C5A90899190500DD8943 /* Controller.mm */,
-				C843FC8529C8B40800491854 /* VersionComparator.h */,
-				C843FC8629C8B40800491854 /* VersionComparator.mm */,
 				4DFBC2DD09C0970D00D5C571 /* Torrent.h */,
 				4DFBC2DE09C0970D00D5C571 /* Torrent.mm */,
 				A27F0F310E19AD9800B2DB97 /* TorrentGroup.h */,
@@ -1715,6 +1703,8 @@
 				A2DF37050C220D03006523C1 /* CreatorWindowController.mm */,
 				A25892620CF1F7E800CCCDDF /* StatsWindowController.h */,
 				A25892630CF1F7E800CCCDDF /* StatsWindowController.mm */,
+				311D0ADD3DC91E107F0DD0FA /* Theme.h */,
+				DC5CD3A96168A015FF90A7E0 /* Theme.mm */,
 				A2085DD90C53BC74000BC3B7 /* AboutWindowController.h */,
 				A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */,
 				A2F7CF5D13035FFD0016FF10 /* URLSheetWindowController.h */,
@@ -1777,7 +1767,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Transmission.app */,
+				8D1107320486CEB800E47090 /* Transmission new.app */,
 				4DDBB71909E16BAE00284745 /* transmissioncli */,
 				4D18389709DEC0030047D688 /* libtransmission.a */,
 				BEFC1C000C07750000B0BB3C /* transmission-daemon */,
@@ -1865,7 +1855,6 @@
 				A2451E6816ACE4EB00586E0E /* FileRenameSheetController.xib */,
 				F63480621E1D7274005B9E09 /* Images.xcassets */,
 				4D043A7E090AE979009FEDA8 /* TransmissionDocument.icns */,
-				A267C2832E9F2B23003B87D7 /* Transmission_Tahoe.icon */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -1879,7 +1868,6 @@
 				A2E669780F5B8E5A00B4251A /* Security.framework */,
 				A22CFB810FB66EF30009BD3E /* Carbon.framework */,
 				A221DCC7104B3660008A642D /* Quartz.framework */,
-				A24F19070A3A790800C9C145 /* Sparkle.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2793,7 +2781,7 @@
 			name = Transmission;
 			productInstallPath = "$(HOME)/Applications";
 			productName = Transmission;
-			productReference = 8D1107320486CEB800E47090 /* Transmission.app */;
+			productReference = 8D1107320486CEB800E47090 /* Transmission new.app */;
 			productType = "com.apple.product-type.application";
 		};
 		A22CFCB90FC24F710009BD3E /* dht */ = {
@@ -3187,7 +3175,6 @@
 				A209EAEC1142D294002B02D1 /* InfoActivityView.xib in Resources */,
 				A209EAED1142D294002B02D1 /* InfoGeneralView.xib in Resources */,
 				A209EB201142DD85002B02D1 /* InfoTrackersView.xib in Resources */,
-				A267C2842E9F2B23003B87D7 /* Transmission_Tahoe.icon in Resources */,
 				A209EBA71142EAF3002B02D1 /* InfoPeersView.xib in Resources */,
 				A209EBD91142F52B002B02D1 /* InfoFileView.xib in Resources */,
 				A209EC12114301C6002B02D1 /* InfoOptionsView.xib in Resources */,
@@ -3440,7 +3427,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C86BCD9928228A9600F45599 /* SparkleProxy.mm in Sources */,
 				ED86936F2ADAE34D00342B1A /* DefaultAppHelper.mm in Sources */,
 				A225A4C0187E369C00CDE823 /* ShareToolbarItem.mm in Sources */,
 				A2D77453154CC72B00A62B93 /* WebSeedTableView.mm in Sources */,
@@ -3470,6 +3456,7 @@
 				ED6F16B62EB8F1EB007CD864 /* FilePriorityCellView.mm in Sources */,
 				ED6F16B72EB8F1EB007CD864 /* FileCheckCellView.mm in Sources */,
 				A2DF37070C220D03006523C1 /* CreatorWindowController.mm in Sources */,
+				B4584969FFAB5DCD72DB5DEF /* Theme.mm in Sources */,
 				A2085DDC0C53BC74000BC3B7 /* AboutWindowController.mm in Sources */,
 				A257C1820CAD3003004E121C /* PeerTableView.mm in Sources */,
 				45489C5429AF6FB20098A812 /* TorrentCellActionButton.mm in Sources */,
@@ -3516,7 +3503,6 @@
 				A2B5B4E91880665E0071A66A /* ShareTorrentFileHelper.mm in Sources */,
 				A22BAE281388040500FB022F /* NSMutableArrayAdditions.mm in Sources */,
 				A2966E8713DAF74C007B52DF /* GlobalOptionsPopoverViewController.mm in Sources */,
-				C843FC8729C8B40800491854 /* VersionComparator.mm in Sources */,
 				A234EA541453563B000F3E97 /* NSImageAdditions.mm in Sources */,
 				A2AB883E16A399A6008FAD50 /* VDKQueue.mm in Sources */,
 				4534164229B0EA8600F544C9 /* SmallTorrentCell.mm in Sources */,
@@ -4279,7 +4265,7 @@
 		0053D3D50C86774200545606 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Transmission_Tahoe;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_ENTITLEMENTS = macosx/Transmission.entitlements;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -4294,7 +4280,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_NAME = Transmission;
+				PRODUCT_NAME = "Transmission new";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"third-party/fmt/include",
@@ -4431,7 +4417,7 @@
 					"-DWITH_CCRYPTO",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				PRODUCT_BUNDLE_IDENTIFIER = org.m0k.transmission;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -4543,7 +4529,7 @@
 		4DF0C599089918A300DD8943 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Transmission_Tahoe;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_ENTITLEMENTS = macosx/Transmission.entitlements;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -4558,7 +4544,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_NAME = Transmission;
+				PRODUCT_NAME = "Transmission new";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"third-party/fmt/include",
@@ -4636,7 +4622,7 @@
 					"-DNDEBUG",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				PRODUCT_BUNDLE_IDENTIFIER = org.m0k.transmission;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new";
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -4740,7 +4726,7 @@
 					"-DWITH_CCRYPTO",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				PRODUCT_BUNDLE_IDENTIFIER = org.m0k.transmission;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new";
 				SDKROOT = macosx;
 			};
 			name = "Release - Debug";
@@ -4748,7 +4734,7 @@
 		A250CFEC0CDA19680068B4B6 /* Release - Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = Transmission_Tahoe;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_ENTITLEMENTS = macosx/Transmission.entitlements;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -4763,7 +4749,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_NAME = Transmission;
+				PRODUCT_NAME = "Transmission new";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"third-party/fmt/include",
@@ -4949,7 +4935,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.m0k.transmission.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4976,7 +4962,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.m0k.transmission.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -5003,7 +4989,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.m0k.transmission.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SYSTEM_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -5409,7 +5395,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.m0k.transmission.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SYSTEM_HEADER_SEARCH_PATHS = (
@@ -5441,7 +5427,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.m0k.transmission.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SYSTEM_HEADER_SEARCH_PATHS = (
@@ -5473,7 +5459,7 @@
 					"-fmodules",
 					"-fcxx-modules",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.m0k.transmission.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nemukai.transmission-new.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SYSTEM_HEADER_SEARCH_PATHS = (
