@@ -38,8 +38,6 @@ target_sources(${TR_NAME}-mac
     PRIVATE
         AboutWindowController.h
         AboutWindowController.mm
-        AddMagnetWindowController.h
-        AddMagnetWindowController.mm
         AddWindowController.h
         AddWindowController.mm
         Badger.h
@@ -131,10 +129,6 @@ target_sources(${TR_NAME}-mac
         NSMutableArrayAdditions.mm
         NSStringAdditions.h
         NSStringAdditions.mm
-        PeerProgressIndicatorCell.h
-        PeerProgressIndicatorCell.mm
-        PeerTableView.h
-        PeerTableView.mm
         PiecesView.h
         PiecesView.mm
         PortChecker.h
@@ -183,24 +177,18 @@ target_sources(${TR_NAME}-mac
         TorrentGroup.mm
         TorrentTableView.h
         TorrentTableView.mm
-        TrackerCell.h
-        TrackerCell.mm
         TrackerNode.h
         TrackerNode.mm
         TrackerTableView.h
         TrackerTableView.mm
         Utils.h
-        Utils.mm
-        WebSeedTableView.h
-        WebSeedTableView.mm)
+        Utils.mm)
+
 
 set(XIB_FILES
     AboutWindow.xib
     BlocklistStatusWindow.xib
     FileRenameSheetController.xib
-    InfoFileView.xib
-    InfoPeersView.xib
-    InfoTrackersView.xib
     InfoWindow.xib
     MessageWindow.xib
     StatsWindow.xib
@@ -340,14 +328,11 @@ else()
 endif()
 
 set(BASE_XIB_FILES
-    AddMagnetWindow.xib
-    AddWindow.xib
     Creator.xib
     GlobalOptionsPopover.xib
     GroupRules.xib
     InfoActivityView.xib
     InfoGeneralView.xib
-    InfoOptionsView.xib
     MainMenu.xib
     PrefsWindow.xib)
 list(TRANSFORM BASE_XIB_FILES

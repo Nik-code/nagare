@@ -88,7 +88,17 @@
     }
     NSRect const anchor = main != nil ? main.frame : NSScreen.mainScreen.visibleFrame;
     NSSize const size = self.frame.size;
-    [self setFrameOrigin:NSMakePoint(NSMidX(anchor) - size.width / 2.0, NSMaxY(anchor) - size.height - 72.0)];
+
+    // Several files added at once shouldn't land exactly on top of each other.
+    CGFloat cascade = 0.0;
+    for (NSWindow* window in NSApp.windows)
+    {
+        if (window != self && window.visible && [window isKindOfClass:GlassPanel.class])
+        {
+            cascade += 22.0;
+        }
+    }
+    [self setFrameOrigin:NSMakePoint(NSMidX(anchor) - size.width / 2.0 + cascade, NSMaxY(anchor) - size.height - 72.0 - cascade)];
 }
 
 @end

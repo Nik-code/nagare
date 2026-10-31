@@ -10,10 +10,6 @@
 
 - (void)setInfoForTorrents:(NSArray<Torrent*>*)torrents;
 - (void)updateInfo;
-
-- (void)saveViewSize;
 - (void)clearView;
-
-- (IBAction)addRemoveTracker:(id)sender;
 
 @end

@@ -6,6 +6,7 @@
 #import "FileListNode.h"
 #import "FileOutlineController.h"
 #import "FileOutlineView.h"
+#import "Theme.h"
 #import "Torrent.h"
 
 @interface InfoFileViewController ()
@@ -14,11 +15,11 @@
 
 @property(nonatomic) BOOL fSet;
 
-@property(nonatomic) IBOutlet FileOutlineController* fFileController;
+@property(nonatomic) FileOutlineController* fFileController;
 
-@property(nonatomic) IBOutlet NSSearchField* fFileFilterField;
-@property(nonatomic) IBOutlet NSButton* fCheckAllButton;
-@property(nonatomic) IBOutlet NSButton* fUncheckAllButton;
+@property(nonatomic) NSSearchField* fFileFilterField;
+@property(nonatomic) NSButton* fCheckAllButton;
+@property(nonatomic) NSButton* fUncheckAllButton;
 
 @end
 
@@ -26,7 +27,7 @@
 
 - (instancetype)init
 {
-    if ((self = [super initWithNibName:@"InfoFileView" bundle:nil]))
+    if ((self = [super initWithNibName:nil bundle:nil]))
     {
         self.title = NSLocalizedString(@"Files", "Inspector view -> title");
     }
@@ -34,41 +35,42 @@
     return self;
 }
 
-- (void)awakeFromNib
+- (void)loadView
 {
-    [super awakeFromNib];
-    CGFloat const height = [NSUserDefaults.standardUserDefaults floatForKey:@"InspectorContentHeightFiles"];
-    if (height != 0.0)
+    NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 540, 480)];
+
+    self.fFileFilterField = [[NSSearchField alloc] initWithFrame:NSZeroRect];
+    self.fFileFilterField.placeholderString = NSLocalizedString(@"Filter", "inspector -> file filter");
+    self.fFileFilterField.target = self;
+    self.fFileFilterField.action = @selector(setFileFilterText:);
+    self.fFileFilterField.translatesAutoresizingMaskIntoConstraints = NO;
+
+    self.fCheckAllButton = [Theme glassButton:NSLocalizedString(@"All", "inspector -> check all") target:self action:@selector(checkAll:)];
+    self.fUncheckAllButton = [Theme glassButton:NSLocalizedString(@"None", "inspector -> check all") target:self action:@selector(uncheckAll:)];
+
+    self.fFileController = [[FileOutlineController alloc] initWithPriorities:YES];
+    NSScrollView* list = self.fFileController.scrollView;
+
+    for (NSView* subview in @[ self.fFileFilterField, self.fCheckAllButton, self.fUncheckAllButton, list ])
     {
-        NSRect viewRect = self.view.frame;
-        viewRect.size.height = height;
-        self.view.frame = viewRect;
+        [view addSubview:subview];
     }
 
-    [self.fFileFilterField.cell setPlaceholderString:NSLocalizedString(@"Filter", "inspector -> file filter")];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.fFileFilterField.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:20],
+        [self.fFileFilterField.topAnchor constraintEqualToAnchor:view.topAnchor constant:14],
+        [self.fFileFilterField.trailingAnchor constraintEqualToAnchor:self.fCheckAllButton.leadingAnchor constant:-10],
+        [self.fCheckAllButton.centerYAnchor constraintEqualToAnchor:self.fFileFilterField.centerYAnchor],
+        [self.fCheckAllButton.trailingAnchor constraintEqualToAnchor:self.fUncheckAllButton.leadingAnchor constant:-6],
+        [self.fUncheckAllButton.centerYAnchor constraintEqualToAnchor:self.fFileFilterField.centerYAnchor],
+        [self.fUncheckAllButton.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:-20],
+        [list.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:20],
+        [list.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:-20],
+        [list.topAnchor constraintEqualToAnchor:self.fFileFilterField.bottomAnchor constant:10],
+        [list.bottomAnchor constraintEqualToAnchor:view.bottomAnchor constant:-12],
+    ]];
 
-    //localize and place all and none buttons
-    self.fCheckAllButton.title = NSLocalizedString(@"All", "inspector -> check all");
-    self.fUncheckAllButton.title = NSLocalizedString(@"None", "inspector -> check all");
-
-    NSRect checkAllFrame = self.fCheckAllButton.frame;
-    NSRect uncheckAllFrame = self.fUncheckAllButton.frame;
-    CGFloat const oldAllWidth = checkAllFrame.size.width;
-    CGFloat const oldNoneWidth = uncheckAllFrame.size.width;
-
-    [self.fCheckAllButton sizeToFit];
-    [self.fUncheckAllButton sizeToFit];
-    CGFloat const newWidth = MAX(self.fCheckAllButton.bounds.size.width, self.fUncheckAllButton.bounds.size.width);
-
-    CGFloat const uncheckAllChange = newWidth - oldNoneWidth;
-    uncheckAllFrame.size.width = newWidth;
-    uncheckAllFrame.origin.x -= uncheckAllChange;
-    self.fUncheckAllButton.frame = uncheckAllFrame;
-
-    CGFloat const checkAllChange = newWidth - oldAllWidth;
-    checkAllFrame.size.width = newWidth;
-    checkAllFrame.origin.x -= (checkAllChange + uncheckAllChange);
-    self.fCheckAllButton.frame = checkAllFrame;
+    self.view = view;
 }
 
 - (void)setInfoForTorrents:(NSArray<Torrent*>*)torrents
@@ -100,11 +102,6 @@
             self.fUncheckAllButton.enabled = !torrent.allDownloaded; //if there are any checked files that aren't finished
         }
     }
-}
-
-- (void)saveViewSize
-{
-    [NSUserDefaults.standardUserDefaults setFloat:NSHeight(self.view.frame) forKey:@"InspectorContentHeightFiles"];
 }
 
 - (void)setFileFilterText:(id)sender
@@ -228,6 +225,7 @@
 
 - (void)setupInfo
 {
+    [self view];
     self.fFileFilterField.stringValue = @"";
     [self setFileFilterText:self.fFileFilterField];
 

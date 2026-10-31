@@ -10,8 +10,6 @@
 
 - (void)setInfoForTorrents:(NSArray<Torrent*>*)torrents;
 - (void)updateInfo;
-
-- (void)saveViewSize;
 - (void)clearView;
 
 @end

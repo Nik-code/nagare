@@ -32,7 +32,6 @@
 #import "AboutWindowController.h"
 #import "LinkPanelController.h"
 #import "AddWindowController.h"
-#import "AddMagnetWindowController.h"
 #import "MessageWindowController.h"
 #import "GlobalOptionsPopoverViewController.h"
 #import "ButtonToolbarItem.h"
@@ -1579,8 +1578,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
     if ([self.fDefaults boolForKey:@"MagnetOpenAsk"] || !location)
     {
-        AddMagnetWindowController* addController = [[AddMagnetWindowController alloc] initWithTorrent:torrent destination:location
-                                                                                           controller:self];
+        AddWindowController* addController = [[AddWindowController alloc] initWithMagnet:torrent destination:location controller:self];
         [addController showWindow:self];
 
         if (!self.fAddWindows)
@@ -1607,37 +1605,6 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     }
 
     [self fullUpdateUI];
-}
-
-- (void)askOpenMagnetConfirmed:(AddMagnetWindowController*)addController add:(BOOL)add
-{
-    Torrent* torrent = addController.torrent;
-
-    if (add)
-    {
-        torrent.queuePosition = self.fTorrents.count;
-
-        [torrent update];
-        [self.fTorrents addObject:torrent];
-
-        if (!self.fAddingTransfers)
-        {
-            self.fAddingTransfers = [[NSMutableSet alloc] init];
-        }
-        [self.fAddingTransfers addObject:torrent];
-
-        [self fullUpdateUI];
-    }
-    else
-    {
-        [self removeTorrentsImpl:@[ torrent ] deleteData:NO];
-    }
-
-    [self.fAddWindows removeObject:addController];
-    if (self.fAddWindows.count == 0)
-    {
-        self.fAddWindows = nil;
-    }
 }
 
 - (void)openCreatedFile:(NSNotification*)notification

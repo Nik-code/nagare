@@ -7,12 +7,9 @@
 @class Controller;
 @class Torrent;
 
+/// The glass panel that adds a transfer, from a .torrent file or a magnet link.
 @interface AddWindowController : NSWindowController
 
-@property(nonatomic, readonly) Torrent* torrent;
-
-// if canToggleDelete is NO, we will also not delete the file regardless of the delete check's state
-// (this is so it can be disabled and checked for a downloaded torrent, where the file's already deleted)
 - (instancetype)initWithTorrent:(Torrent*)torrent
                           destination:(NSString*)path
                       lockDestination:(BOOL)lockDestination
@@ -21,21 +18,8 @@
     deleteTorrentCheckEnableInitially:(BOOL)deleteTorrent
                       canToggleDelete:(BOOL)canToggleDelete;
 
-- (IBAction)setDestination:(id)sender;
+- (instancetype)initWithMagnet:(Torrent*)torrent destination:(NSString*)path controller:(Controller*)controller;
 
-- (IBAction)add:(id)sender;
-- (IBAction)cancelAdd:(id)sender;
-
-- (IBAction)setFileFilterText:(id)sender;
-- (IBAction)checkAll:(id)sender;
-- (IBAction)uncheckAll:(id)sender;
-
-- (IBAction)verifyLocalData:(id)sender;
-
-- (IBAction)changePriority:(id)sender;
-
-- (void)updateCheckButtons:(NSNotification*)notification;
-
-- (void)updateGroupMenu:(NSNotification*)notification;
+@property(nonatomic, readonly) Torrent* torrent;
 
 @end

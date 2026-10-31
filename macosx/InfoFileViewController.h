@@ -14,8 +14,6 @@
 - (void)setInfoForTorrents:(NSArray<Torrent*>*)torrents;
 - (void)updateInfo;
 
-- (void)saveViewSize;
-
 - (IBAction)setFileFilterText:(id)sender;
 - (IBAction)checkAll:(id)sender;
 - (IBAction)uncheckAll:(id)sender;

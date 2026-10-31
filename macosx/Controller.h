@@ -10,7 +10,6 @@
 
 #import "VDKQueue.h"
 
-@class AddMagnetWindowController;
 @class AddWindowController;
 @class MessageWindowController;
 @class PrefsController;
@@ -35,7 +34,6 @@ typedef NS_ENUM(NSUInteger, AddType) { //
 - (IBAction)openShowSheet:(id)sender;
 
 - (void)openMagnet:(NSString*)address;
-- (void)askOpenMagnetConfirmed:(AddMagnetWindowController*)addController add:(BOOL)add;
 
 - (void)invalidOpenAlert:(NSString*)filename;
 - (void)invalidOpenMagnetAlert:(NSString*)address;

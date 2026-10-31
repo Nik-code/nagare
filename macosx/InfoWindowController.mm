@@ -23,7 +23,8 @@ static TabIdentifier const TabIdentifierPeers = @"Peers";
 static TabIdentifier const TabIdentifierFiles = @"Files";
 static TabIdentifier const TabIdentifierOptions = @"Options";
 
-static CGFloat const kTabMinHeight = 250;
+static CGFloat const kWindowMinWidth = 540;
+static CGFloat const kWindowMinHeight = 640;
 
 static NSInteger const kInvalidTag = -99;
 
@@ -38,8 +39,6 @@ typedef NS_ENUM(NSUInteger, TabTag) {
 @interface InfoWindowController ()
 
 @property(nonatomic, copy) NSArray<Torrent*>* fTorrents;
-
-@property(nonatomic) CGFloat fMinWindowWidth;
 
 @property(nonatomic) NSViewController<InfoViewController>* fViewController;
 @property(nonatomic) NSInteger fCurrentTabTag;
@@ -77,15 +76,18 @@ typedef NS_ENUM(NSUInteger, TabTag) {
 
     window.floatingPanel = NO;
 
-    CGFloat const windowHeight = NSHeight(window.frame);
-    self.fMinWindowWidth = window.minSize.width;
+    window.minSize = NSMakeSize(kWindowMinWidth, kWindowMinHeight);
+    window.maxSize = NSMakeSize(FLT_MAX, FLT_MAX);
 
     [window setFrameAutosaveName:@"InspectorWindow"];
     [window setFrameUsingName:@"InspectorWindow"];
 
+    // Every tab shares one size, so anything saved smaller by an older build grows here.
     NSRect windowRect = window.frame;
-    windowRect.origin.y -= windowHeight - NSHeight(windowRect);
-    windowRect.size.height = windowHeight;
+    CGFloat const growth = MAX(kWindowMinHeight - NSHeight(windowRect), 0);
+    windowRect.origin.y -= growth;
+    windowRect.size.height += growth;
+    windowRect.size.width = MAX(NSWidth(windowRect), kWindowMinWidth);
     [window setFrame:windowRect display:NO];
 
     // Let inspector gain keyboard focus when clicked on non-interactive areas
@@ -167,25 +169,6 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     [nc addObserver:self selector:@selector(resetInfoForTorrent:) name:@"ResetInspector" object:nil];
     [nc addObserver:self selector:@selector(updateInfoStats) name:@"UpdateStats" object:nil];
     [nc addObserver:self selector:@selector(updateOptions) name:@"UpdateOptions" object:nil];
-
-    //add a custom window resize notification heer so we can disable it temporarily in settab:
-    [nc addObserver:self selector:@selector(windowWasResized:) name:NSWindowDidResizeNotification object:self.window];
-}
-
-- (void)dealloc
-{
-    if ([_fViewController respondsToSelector:@selector(saveViewSize)])
-    {
-        [_fViewController saveViewSize];
-    }
-}
-
-- (void)windowWasResized:(NSNotification*)notification
-{
-    if (self.fViewController == self.fOptionsViewController)
-    {
-        [self.fOptionsViewController checkWindowSize];
-    }
 }
 
 - (void)setInfoForTorrents:(NSArray<Torrent*>*)torrents
@@ -243,28 +226,15 @@ typedef NS_ENUM(NSUInteger, TabTag) {
         return;
     }
 
-    //remove window resize notification
-    [NSNotificationCenter.defaultCenter removeObserver:self name:NSWindowDidResizeNotification object:self.window];
-
     //take care of old view
-    CGFloat oldHeight = 0;
     if (oldTabTag != kInvalidTag)
     {
-        if ([self.fViewController respondsToSelector:@selector(saveViewSize)])
-        {
-            [self.fViewController saveViewSize];
-        }
-
         if ([self.fViewController respondsToSelector:@selector(clearView)])
         {
             [self.fViewController clearView];
         }
 
-        NSView* oldView = self.fViewController.view;
-        oldHeight = NSHeight(oldView.frame);
-
-        //remove old view
-        [oldView removeFromSuperview];
+        [self.fViewController.view removeFromSuperview];
     }
 
     //set new tab item
@@ -334,67 +304,9 @@ typedef NS_ENUM(NSUInteger, TabTag) {
         stringWithFormat:@"%@, %@", self.fViewController.title, NSLocalizedString(@"Details", "Inspector -> title")];
 
     NSView* view = self.fViewController.view;
+    view.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.fViewController updateInfo];
-
-    NSRect windowRect = window.frame, viewRect = view.frame;
-    CGFloat minWindowWidth = MAX(self.fMinWindowWidth, view.fittingSize.width);
-
-    //special case for Activity and Options views
-    if (self.fViewController == self.fOptionsViewController)
-    {
-        [self.fOptionsViewController setOldHeight:oldHeight];
-        [self.fOptionsViewController checkLayout];
-
-        minWindowWidth = MAX(self.fMinWindowWidth, self.fOptionsViewController.fPriorityView.frame.size.width);
-        viewRect = [self.fOptionsViewController viewRect];
-    }
-
-    CGFloat const viewHeightDifference = NSHeight(viewRect) - oldHeight;
-    windowRect.origin.y -= viewHeightDifference;
-    windowRect.size.height += viewHeightDifference;
-    windowRect.size.width = MAX(NSWidth(windowRect), minWindowWidth);
-
-    if ([self.fViewController respondsToSelector:@selector(saveViewSize)]) //a little bit hacky, but avoids requiring an extra method
-    {
-        if (window.screen)
-        {
-            CGFloat const screenHeight = NSHeight(window.screen.visibleFrame);
-            if (NSHeight(windowRect) > screenHeight)
-            {
-                CGFloat const windowHeightDifference = screenHeight - NSHeight(windowRect);
-                windowRect.origin.y -= windowHeightDifference;
-                windowRect.size.height += windowHeightDifference;
-
-                viewRect.size.height += windowHeightDifference;
-            }
-        }
-
-        window.minSize = NSMakeSize(minWindowWidth, NSHeight(windowRect) - NSHeight(viewRect) + kTabMinHeight);
-        window.maxSize = NSMakeSize(FLT_MAX, FLT_MAX);
-    }
-    else
-    {
-        window.minSize = NSMakeSize(minWindowWidth, NSHeight(windowRect));
-        window.maxSize = NSMakeSize(FLT_MAX, NSHeight(windowRect));
-    }
-
-    viewRect.size.width = NSWidth(windowRect);
-    view.frame = viewRect;
-
-    if (self.fViewController == self.fOptionsViewController)
-    {
-        self.fOptionsViewController.view.hidden = YES;
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.fOptionsViewController updateWindowLayout];
-            self.fOptionsViewController.view.hidden = NO;
-        });
-    }
-    else
-    {
-        [window setFrame:windowRect display:YES animate:oldTabTag != kInvalidTag];
-    }
 
     [window.contentView addSubview:view];
 
@@ -409,13 +321,6 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     {
         [[QLPreviewPanel sharedPreviewPanel] reloadData];
     }
-
-    //add window resize notification
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(windowWasResized:)
-                                                   name:NSWindowDidResizeNotification
-                                                 object:self.window];
-    });
 }
 
 - (void)setNextTab
