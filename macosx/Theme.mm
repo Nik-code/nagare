@@ -2,6 +2,7 @@
 // It may be used under the MIT (SPDX: MIT) license.
 // License text can be found in the licenses/ folder.
 
+#import <CoreText/CoreText.h>
 #import <objc/runtime.h>
 
 #import "Theme.h"
@@ -13,14 +14,17 @@ static NSColor* hexColor(uint32_t rgb)
     return [NSColor colorWithSRGBRed:((rgb >> 16) & 0xFF) / 255.0 green:((rgb >> 8) & 0xFF) / 255.0 blue:(rgb & 0xFF) / 255.0 alpha:1.0];
 }
 
-static NSColor* dynamicColor(NSString* name, uint32_t oat, uint32_t sumi)
+static BOOL isDark(NSAppearance* appearance)
 {
-    NSColor* light = hexColor(oat);
-    NSColor* dark = hexColor(sumi);
+    return [appearance bestMatchFromAppearancesWithNames:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]] == NSAppearanceNameDarkAqua;
+}
+
+static NSColor* dynamicColor(NSString* name, uint32_t light, uint32_t dark)
+{
+    NSColor* lightColor = hexColor(light);
+    NSColor* darkColor = hexColor(dark);
     return [NSColor colorWithName:name dynamicProvider:^NSColor*(NSAppearance* appearance) {
-        BOOL const isDark = [appearance bestMatchFromAppearancesWithNames:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]] ==
-            NSAppearanceNameDarkAqua;
-        return isDark ? dark : light;
+        return isDark(appearance) ? darkColor : lightColor;
     }];
 }
 
@@ -45,15 +49,14 @@ static NSDictionary<NSString*, NSColor*>* systemColorTable()
         @"headerTextColor" : Theme.bright,
         @"selectedControlTextColor" : Theme.bright,
         @"selectedTextColor" : Theme.bright,
-        @"selectedMenuItemTextColor" : Theme.bright,
         @"secondaryLabelColor" : Theme.foreground,
         @"tertiaryLabelColor" : faded(@"themeTertiary", Theme.foreground, 0.72),
         @"quaternaryLabelColor" : faded(@"themeQuaternary", Theme.foreground, 0.45),
         @"disabledControlTextColor" : faded(@"themeDisabled", Theme.foreground, 0.55),
-        @"windowBackgroundColor" : Theme.background,
-        @"underPageBackgroundColor" : Theme.background,
+        @"windowBackgroundColor" : Theme.surface,
+        @"underPageBackgroundColor" : Theme.surface,
         @"controlColor" : Theme.field,
-        @"controlBackgroundColor" : Theme.panel,
+        @"controlBackgroundColor" : Theme.surface,
         @"textBackgroundColor" : Theme.field,
         @"separatorColor" : Theme.border,
         @"gridColor" : Theme.border,
@@ -73,12 +76,17 @@ static NSDictionary<NSString*, NSColor*>* systemColorTable()
 
 + (void)install
 {
-    // Orange is the closest system accent, and it reaches the controls AppKit draws itself.
+    // Blue is the closest system accent, and it reaches the controls AppKit draws itself.
     NSUserDefaults* defaults = NSUserDefaults.standardUserDefaults;
-    [defaults setInteger:1 forKey:@"AppleAccentColor"];
-    [defaults setObject:@"1.000000 0.874510 0.701961 Orange" forKey:@"AppleHighlightColor"];
+    [defaults setInteger:4 forKey:@"AppleAccentColor"];
+    [defaults setObject:@"0.698039 0.843137 1.000000 Blue" forKey:@"AppleHighlightColor"];
 
-    Class meta = object_getClass(NSColor.class);
+    NSURL* font = [NSBundle.mainBundle URLForResource:@"Outfit-Medium" withExtension:@"ttf"];
+    if (font != nil)
+    {
+        CTFontManagerRegisterFontsForURL((__bridge CFURLRef)font, kCTFontManagerScopeProcess, nil);
+    }
+
     [systemColorTable() enumerateKeysAndObjectsUsingBlock:^(NSString* name, NSColor* color, BOOL*) {
         Method method = class_getClassMethod(NSColor.class, NSSelectorFromString(name));
         if (method != nil)
@@ -91,11 +99,10 @@ static NSDictionary<NSString*, NSColor*>* systemColorTable()
 
     Method alternating = class_getClassMethod(NSColor.class, @selector(alternatingContentBackgroundColors));
     method_setImplementation(alternating, imp_implementationWithBlock(^NSArray<NSColor*>*(id) {
-        return @[ Theme.panel, Theme.panel ];
+        return @[ NSColor.clearColor, NSColor.clearColor ];
     }));
 
-    Method catalog = class_getClassMethod(meta, @selector(colorWithCatalogName:colorName:));
-    catalog = catalog ?: class_getClassMethod(NSColor.class, @selector(colorWithCatalogName:colorName:));
+    Method catalog = class_getClassMethod(NSColor.class, @selector(colorWithCatalogName:colorName:));
     typedef NSColor* (*CatalogFunc)(id, SEL, NSColorListName, NSColorName);
     auto const original = reinterpret_cast<CatalogFunc>(method_getImplementation(catalog));
     method_setImplementation(catalog, imp_implementationWithBlock(^NSColor*(id self, NSColorListName list, NSColorName name) {
@@ -109,14 +116,20 @@ static NSDictionary<NSString*, NSColor*>* systemColorTable()
     return static_cast<ThemeMode>([NSUserDefaults.standardUserDefaults integerForKey:kThemeModeKey]);
 }
 
++ (void)setMode:(ThemeMode)mode
+{
+    [NSUserDefaults.standardUserDefaults setInteger:mode forKey:kThemeModeKey];
+    [self applySavedMode];
+}
+
 + (void)applySavedMode
 {
     switch (Theme.mode)
     {
-    case ThemeModeOat:
+    case ThemeModeLight:
         NSApp.appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
         break;
-    case ThemeModeSumi:
+    case ThemeModeDark:
         NSApp.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
         break;
     default:
@@ -142,13 +155,12 @@ static NSDictionary<NSString*, NSColor*>* systemColorTable()
     }
 
     NSMenu* themeMenu = [[NSMenu alloc] initWithTitle:@"Theme"];
-    NSArray<NSString*>* titles = @[ @"Match System", @"Oat", @"Sumi" ];
+    NSArray<NSString*>* titles = @[ @"Match System", @"Light", @"Dark" ];
     for (NSUInteger index = 0; index < titles.count; ++index)
     {
         NSMenuItem* item = [themeMenu addItemWithTitle:titles[index] action:@selector(chooseMode:) keyEquivalent:@""];
         item.target = self;
         item.tag = index;
-        item.state = static_cast<ThemeMode>(index) == Theme.mode ? NSControlStateValueOn : NSControlStateValueOff;
     }
 
     NSMenuItem* themeItem = [[NSMenuItem alloc] initWithTitle:@"Theme" action:nil keyEquivalent:@""];
@@ -159,42 +171,150 @@ static NSDictionary<NSString*, NSColor*>* systemColorTable()
 
 + (void)chooseMode:(NSMenuItem*)sender
 {
-    [NSUserDefaults.standardUserDefaults setInteger:sender.tag forKey:kThemeModeKey];
-    for (NSMenuItem* item in sender.menu.itemArray)
-    {
-        item.state = item == sender ? NSControlStateValueOn : NSControlStateValueOff;
-    }
-    [self applySavedMode];
+    self.mode = static_cast<ThemeMode>(sender.tag);
 }
 
-#define THEME_COLOR(NAME, OAT, SUMI) \
++ (BOOL)validateMenuItem:(NSMenuItem*)item
+{
+    item.state = item.tag == Theme.mode ? NSControlStateValueOn : NSControlStateValueOff;
+    return YES;
+}
+
+#define THEME_COLOR(NAME, LIGHT, DARK) \
     +(NSColor*)NAME \
     { \
-        static NSColor* sColor = dynamicColor(@"theme." #NAME, OAT, SUMI); \
+        static NSColor* sColor = dynamicColor(@"theme." #NAME, LIGHT, DARK); \
         return sColor; \
     }
 
-THEME_COLOR(background, 0xe1dfd1, 0x1c1b18)
-THEME_COLOR(panel, 0xebebdf, 0x141412)
-THEME_COLOR(field, 0xf4f3ec, 0x100f0e)
-THEME_COLOR(border, 0xc9c7b9, 0x2e2d29)
-THEME_COLOR(foreground, 0x4a4942, 0x9c9a8e)
-THEME_COLOR(bright, 0x1a1a17, 0xebebdf)
-THEME_COLOR(hover, 0xd6d4c5, 0x262521)
-THEME_COLOR(selected, 0xcbc9ba, 0x34332e)
-THEME_COLOR(accent, 0xe9631a, 0xf0702b)
-THEME_COLOR(seed, 0x6b7a4f, 0x8b9a6b)
-THEME_COLOR(check, 0xa8852c, 0xc2a14a)
-THEME_COLOR(paused, 0xa8a696, 0x56544c)
-THEME_COLOR(track, 0xd6d4c5, 0x262521)
-THEME_COLOR(danger, 0xd33718, 0xd33718)
+THEME_COLOR(surface, 0xf3eee4, 0x23211f)
+THEME_COLOR(field, 0xfbf8f1, 0x1c1a18)
+THEME_COLOR(border, 0xdcd6c8, 0x383531)
+THEME_COLOR(foreground, 0x47524f, 0xb5ac9f)
+THEME_COLOR(bright, 0x1c2a30, 0xefe6d6)
+THEME_COLOR(hover, 0xebe5d8, 0x2c2a27)
+THEME_COLOR(selected, 0xe4decf, 0x34312d)
+THEME_COLOR(accent, 0x0c5f82, 0x8fd8cc)
+THEME_COLOR(seed, 0xa3442a, 0xf0a98a)
+THEME_COLOR(danger, 0xa3301a, 0xff9a7a)
 
-+ (NSImage*)symbol:(NSString*)name color:(NSColor*)color size:(CGFloat)size
++ (NSFont*)displayFontOfSize:(CGFloat)size
 {
-    NSImage* image = [NSImage imageWithSystemSymbolName:name accessibilityDescription:nil];
-    NSImageSymbolConfiguration* configuration = [[NSImageSymbolConfiguration configurationWithPointSize:size weight:NSFontWeightMedium]
-        configurationByApplyingConfiguration:[NSImageSymbolConfiguration configurationWithHierarchicalColor:color]];
-    return [image imageWithSymbolConfiguration:configuration];
+    return [NSFont fontWithName:@"Outfit-Medium" size:size] ?: [NSFont systemFontOfSize:size weight:NSFontWeightMedium];
+}
+
++ (NSImage*)icon:(NSString*)name
+{
+    return [NSImage imageNamed:[@"Icon" stringByAppendingString:name]];
+}
+
++ (NSButton*)iconButton:(NSString*)name target:(id)target action:(SEL)action
+{
+    NSButton* button = [NSButton buttonWithImage:[self icon:name] target:target action:action];
+    button.bordered = NO;
+    button.imageScaling = NSImageScaleProportionallyDown;
+    button.contentTintColor = Theme.foreground;
+    button.translatesAutoresizingMaskIntoConstraints = NO;
+    return button;
+}
+
++ (NSTextField*)labelWithFont:(NSFont*)font color:(NSColor*)color
+{
+    NSTextField* label = [NSTextField labelWithString:@""];
+    label.font = font;
+    label.textColor = color;
+    label.lineBreakMode = NSLineBreakByTruncatingMiddle;
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    return label;
+}
+
++ (id)layerContents:(NSString*)imageName appearance:(NSAppearance*)appearance scale:(CGFloat)scale
+{
+    __block id contents;
+    [appearance performAsCurrentDrawingAppearance:^{
+        NSImage* image = [NSImage imageNamed:imageName];
+        // Catalog images pick a variant on first draw, so render through a CGImage for this appearance.
+        NSRect rect = NSMakeRect(0, 0, image.size.width, image.size.height);
+        contents = (__bridge id)[image CGImageForProposedRect:&rect context:nil hints:nil];
+    }];
+    (void)scale;
+    return contents;
+}
+
++ (void)styleWindow:(NSWindow*)window
+{
+    window.titlebarAppearsTransparent = YES;
+    window.titleVisibility = NSWindowTitleHidden;
+    window.styleMask |= NSWindowStyleMaskFullSizeContentView;
+    window.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
+
+    NSView* content = window.contentView;
+    SurfaceView* surface = [[SurfaceView alloc] initWithFrame:content.bounds];
+    surface.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    [content addSubview:surface positioned:NSWindowBelow relativeTo:nil];
+}
+
++ (void)styleAddWindow:(NSWindow*)window nameField:(NSTextField*)nameField
+{
+    window.titlebarAppearsTransparent = YES;
+    window.titleVisibility = NSWindowTitleHidden;
+    window.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
+
+    NSView* content = window.contentView;
+    SurfaceView* surface = [[SurfaceView alloc] initWithFrame:content.bounds];
+    surface.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    [content addSubview:surface positioned:NSWindowBelow relativeTo:nil];
+
+    nameField.font = [self displayFontOfSize:20];
+
+    NSButton* action = (NSButton*)window.defaultButtonCell.controlView;
+    if ([action isKindOfClass:NSButton.class])
+    {
+        action.title = NSLocalizedString(@"Get", "Add window -> action");
+        action.bezelStyle = NSBezelStyleGlass;
+        action.bezelColor = Theme.accent;
+    }
+}
+
+@end
+
+@implementation SurfaceView
+
+- (BOOL)wantsUpdateLayer
+{
+    return YES;
+}
+
+- (void)updateLayer
+{
+    self.layer.contents = [Theme layerContents:@"ArtSurface" appearance:self.effectiveAppearance scale:1];
+    self.layer.contentsGravity = kCAGravityResizeAspectFill;
+}
+
+- (instancetype)initWithFrame:(NSRect)frame
+{
+    if ((self = [super initWithFrame:frame]))
+    {
+        self.wantsLayer = YES;
+        self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawOnSetNeedsDisplay;
+    }
+    return self;
+}
+
+- (void)viewDidChangeEffectiveAppearance
+{
+    [super viewDidChangeEffectiveAppearance];
+    self.needsDisplay = YES;
+}
+
+- (BOOL)mouseDownCanMoveWindow
+{
+    return YES;
+}
+
+- (NSView*)hitTest:(NSPoint)point
+{
+    return nil;
 }
 
 @end
@@ -210,13 +330,13 @@ THEME_COLOR(danger, 0xd33718, 0xd33718)
 {
     [Theme.border setFill];
     CGFloat const scale = self.window.backingScaleFactor ?: 2.0;
-    NSRectFill(NSMakeRect(14.0, NSMaxY(self.bounds) - 1.0 / scale, NSWidth(self.bounds) - 28.0, 1.0 / scale));
+    NSRectFill(NSMakeRect(24.0, NSMaxY(self.bounds) - 1.0 / scale, NSWidth(self.bounds) - 48.0, 1.0 / scale));
 }
 
 - (void)drawSelectionInRect:(NSRect)dirtyRect
 {
     [Theme.selected setFill];
-    [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(self.bounds, 6.0, 2.0) xRadius:7.0 yRadius:7.0] fill];
+    [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(self.bounds, 12.0, 3.0) xRadius:12.0 yRadius:12.0] fill];
 }
 
 - (void)drawSeparatorInRect:(NSRect)dirtyRect

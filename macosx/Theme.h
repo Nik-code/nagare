@@ -8,17 +8,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, ThemeMode) {
     ThemeModeSystem = 0,
-    ThemeModeOat = 1,
-    ThemeModeSumi = 2,
+    ThemeModeLight = 1,
+    ThemeModeDark = 2,
 };
 
-/// Oat (light) and Sumi (dark), the palettes of the Nagi themes.
+/// Nagare's palette: warm paper in light mode, warm grey in dark.
 ///
-/// Every color is dynamic: Oat is the app's light appearance and Sumi its dark one,
-/// so switching theme only changes the appearance of NSApp.
+/// Every color is dynamic, so switching theme only changes the appearance of NSApp.
 @interface Theme : NSObject
 
-/// Points AppKit's semantic colors at the palette. Call once, before any nib loads.
+/// Points AppKit's semantic colors at the palette and registers Outfit. Call once, before any nib loads.
 + (void)install;
 
 /// Applies the saved theme. Needs NSApp to exist.
@@ -27,10 +26,9 @@ typedef NS_ENUM(NSInteger, ThemeMode) {
 /// Adds the Theme submenu to the main menu's View menu.
 + (void)addThemeMenu;
 
-@property(class, nonatomic, readonly) ThemeMode mode;
+@property(class, nonatomic) ThemeMode mode;
 
-@property(class, nonatomic, readonly) NSColor* background;
-@property(class, nonatomic, readonly) NSColor* panel;
+@property(class, nonatomic, readonly) NSColor* surface;
 @property(class, nonatomic, readonly) NSColor* field;
 @property(class, nonatomic, readonly) NSColor* border;
 @property(class, nonatomic, readonly) NSColor* foreground;
@@ -39,14 +37,33 @@ typedef NS_ENUM(NSInteger, ThemeMode) {
 @property(class, nonatomic, readonly) NSColor* selected;
 @property(class, nonatomic, readonly) NSColor* accent;
 @property(class, nonatomic, readonly) NSColor* seed;
-@property(class, nonatomic, readonly) NSColor* check;
-@property(class, nonatomic, readonly) NSColor* paused;
-@property(class, nonatomic, readonly) NSColor* track;
 @property(class, nonatomic, readonly) NSColor* danger;
 
-/// A template-free SF Symbol in one of the palette's colors.
-+ (nullable NSImage*)symbol:(NSString*)name color:(NSColor*)color size:(CGFloat)size;
+/// Outfit Medium, for the wordmark, big numbers and window titles.
++ (NSFont*)displayFontOfSize:(CGFloat)size;
 
+/// A Tabler icon from the asset catalog, as a template image.
++ (NSImage*)icon:(NSString*)name;
+
+/// A borderless, bezel-free button showing a Tabler icon.
++ (NSButton*)iconButton:(NSString*)name target:(nullable id)target action:(nullable SEL)action;
+
+/// A plain text label.
++ (NSTextField*)labelWithFont:(NSFont*)font color:(NSColor*)color;
+
+/// The image as it should look under `appearance`, ready to use as layer contents.
++ (nullable id)layerContents:(NSString*)imageName appearance:(NSAppearance*)appearance scale:(CGFloat)scale;
+
+/// Blends the titlebar into the window and puts the textured surface behind the content.
++ (void)styleWindow:(NSWindow*)window;
+
+/// The same for a dialog whose nib is laid out below a normal titlebar, with Outfit on its title and "Get" as its action.
++ (void)styleAddWindow:(NSWindow*)window nameField:(NSTextField*)nameField;
+
+@end
+
+/// The textured paper or ash that fills a window.
+@interface SurfaceView : NSView
 @end
 
 /// Row with a hairline under it and a quiet rounded selection.
