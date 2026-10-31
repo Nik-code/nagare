@@ -54,6 +54,7 @@ struct Sample
         root.cornerRadius = kCornerRadius;
         root.cornerCurve = kCACornerCurveContinuous;
         root.masksToBounds = YES;
+        root.borderWidth = 0.5;
 
         _fSky = [self artLayer];
         _fDownWater = [self artLayer];
@@ -82,17 +83,17 @@ struct Sample
         NSView* down = [self statColumn:NSLocalizedString(@"Down", "Header -> stat") value:&_fDownField unit:&_fDownUnitField];
         NSView* up = [self statColumn:NSLocalizedString(@"Up", "Header -> stat") value:&_fUpField unit:&_fUpUnitField];
         NSStackView* stats = [NSStackView stackViewWithViews:@[ down, up ]];
-        stats.spacing = 28;
-        stats.edgeInsets = NSEdgeInsetsMake(11, 18, 11, 22);
+        stats.spacing = 32;
+        stats.edgeInsets = NSEdgeInsetsMake(14, 20, 14, 24);
         stats.translatesAutoresizingMaskIntoConstraints = NO;
         _fGlass.contentView = stats;
         [self addSubview:_fGlass];
 
         [NSLayoutConstraint activateConstraints:@[
             [wordmark.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:84],
-            [wordmark.topAnchor constraintEqualToAnchor:self.topAnchor constant:8],
-            [_fGlass.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:14],
-            [_fGlass.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-14],
+            [wordmark.topAnchor constraintEqualToAnchor:self.topAnchor constant:6],
+            [_fGlass.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:16],
+            [_fGlass.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-16],
         ]];
 
         [self applyArt];
@@ -132,7 +133,7 @@ struct Sample
     NSStackView* column = [NSStackView stackViewWithViews:@[ titleField, line ]];
     column.orientation = NSUserInterfaceLayoutOrientationVertical;
     column.alignment = NSLayoutAttributeLeading;
-    column.spacing = 0;
+    column.spacing = 3;
 
     *value = number;
     *unit = unitField;
@@ -162,6 +163,7 @@ struct Sample
     BOOL const dark = [appearance bestMatchFromAppearancesWithNames:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]] == NSAppearanceNameDarkAqua;
     self.fDownCrest.strokeColor = [NSColor colorWithSRGBRed:dark ? 0.659 : 0.91 green:dark ? 0.894 : 0.984 blue:dark ? 0.855 : 0.965 alpha:1].CGColor;
     self.fUpCrest.strokeColor = [NSColor colorWithSRGBRed:dark ? 0.941 : 1 green:dark ? 0.706 : 0.957 blue:dark ? 0.58 : 0.902 alpha:1].CGColor;
+    self.layer.borderColor = [NSColor colorWithSRGBRed:1 green:0.941 blue:0.863 alpha:dark ? 0.08 : 0.5].CGColor;
 }
 
 - (void)layout
@@ -305,12 +307,13 @@ struct Sample
     {
         CGFloat const x = size.width * i / (kPoints - 1);
         // A small standing swell keeps the water looking like water when speeds are flat.
-        CGFloat const swell = 0.022 * sin(i * 0.95) + 0.012 * sin(i * 2.1 + 1.0);
-        CGFloat const swellUp = 0.012 * sin(i * 1.3 + 2.0);
+        CGFloat const swell = 0.05 * sin(i * 0.72 + 0.4) + 0.02 * sin(i * 1.9 + 1.0);
+        CGFloat const swellUp = 0.022 * sin(i * 1.05 + 2.0);
         CGFloat const downShare = peak > 0.0 ? down[i] / peak : 0.0;
         CGFloat const upShare = peak > 0.0 ? up[i] / peak : 0.0;
-        downPoints[i] = CGPointMake(x, size.height * (0.2 + 0.54 * downShare + swell));
-        upPoints[i] = CGPointMake(x, size.height * (0.09 + 0.3 * upShare + swellUp));
+        // Still water rests about halfway up the tile, so the swell always clears it.
+        downPoints[i] = CGPointMake(x, size.height * (0.5 + 0.3 * downShare + swell));
+        upPoints[i] = CGPointMake(x, size.height * (0.15 + 0.24 * upShare + swellUp));
     }
 
     CGPathRef downLine = [self newPathThrough:downPoints closed:NO];
