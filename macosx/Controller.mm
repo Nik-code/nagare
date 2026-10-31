@@ -51,6 +51,7 @@
 #import "FileRenameSheetController.h"
 #import "BonjourController.h"
 #import "Badger.h"
+#import "DefaultAppHelper.h"
 #import "DragOverlayWindow.h"
 #import "NSImageAdditions.h"
 #import "NSMutableArrayAdditions.h"
@@ -1051,6 +1052,27 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
         [self addQBittorrentTransfers];
     }
 
+    if (![self.fDefaults boolForKey:@"AskedToBeDefault"])
+    {
+        [self.fDefaults setBool:YES forKey:@"AskedToBeDefault"];
+        DefaultAppHelper* helper = [[DefaultAppHelper alloc] init];
+        // macOS confirms each change on its own, so wait for the first before asking for the second.
+        void (^askForFiles)() = ^{
+            if (![helper isDefaultForTorrentFiles])
+            {
+                [helper setDefaultForTorrentFiles:nil];
+            }
+        };
+        if (![helper isDefaultForMagnetURLs])
+        {
+            [helper setDefaultForMagnetURLs:askForFiles];
+        }
+        else
+        {
+            askForFiles();
+        }
+    }
+
     //cover our asses
     if ([NSUserDefaults.standardUserDefaults boolForKey:@"WarningLegal"])
     {
@@ -1826,6 +1848,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     {
         self.fLinkController = [[LinkPanelController alloc] initWithController:self];
     }
+    [self.fLinkController present];
 }
 
 - (void)openPasteboard
@@ -1847,7 +1870,6 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     // the raw text of a magnet link it can spuriously match a substring inside a percent-encoded `tr=` tracker
     // parameter as if it were an unrelated bare domain (e.g. matching "2Ftracker.opentrackr.org" out of
     // "udp%3A%2F%2Ftracker.opentrackr.org"), defaulting a bogus "http://" scheme onto it. Skipping any link match
-    [self.fLinkController present];
     // that overlaps a magnet match avoids that misfire while still opening a plain link genuinely pasted
     // alongside a magnet. See https://github.com/transmission/transmission/issues/8736
     NSDataDetector* linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];

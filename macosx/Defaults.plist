@@ -63,7 +63,7 @@
 	<key>DownloadLimit</key>
 	<integer>100</integer>
 	<key>DownloadLocationConstant</key>
-	<false/>
+	<true/>
 	<key>DownloadSound</key>
 	<string>Glass</string>
 	<key>EncryptionPrefer</key>
