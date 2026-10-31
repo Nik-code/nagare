@@ -1,3 +1,36 @@
+# Nagare
+
+Nagare (流れ, "flow") is a personal macOS torrent client built on [Transmission](https://transmissionbt.com). The engine is Transmission's `libtransmission`, unchanged. The Mac interface is new.
+
+- **Swell header:** the water is a graph. The blue swell is the last ten minutes of download speed and the sand in front of it is upload.
+- **Droplet rows:** each dot is a share of the file. While seeding, the dots become a tide that rises with your share ratio and moves only during upload.
+- **Search:** sources are JSON files, so they are data and nothing in them is ever run. Internet Archive is built in, and more go in `~/Library/Application Support/Nagare/Search Sources`.
+- **Native:** Liquid Glass, Tabler icons, Outfit, with light paper and dark warm grey themes.
+
+Nagare has no auto-updater, so it never replaces itself with anything else.
+
+## Building
+
+Needs macOS 26 or later and Xcode 26.
+
+```bash
+macosx/build-nagare.sh
+```
+
+This builds an arm64 app and installs it to `/Applications/Nagare.app`, signed ad hoc.
+
+## Updating from Transmission
+
+The `macosx` folder has diverged a lot, but `libtransmission` is untouched. Upstream engine and security fixes should merge cleanly; Mac interface changes will not.
+
+## Licence
+
+GPL, like Transmission. See [COPYING](COPYING). Built on Transmission by its authors and contributors. Icons are [Tabler](https://tabler.io/icons) (MIT). Outfit is under the SIL Open Font License, included in `macosx/Fonts`.
+
+---
+
+Transmission's own README follows.
+
 ## About
 
 Transmission is a fast, easy, and free BitTorrent client. It comes in several flavors:

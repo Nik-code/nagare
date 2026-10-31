@@ -39,6 +39,9 @@
 #import "GroupToolbarItem.h"
 #import "ShareToolbarItem.h"
 #import "ShareTorrentFileHelper.h"
+#import "SearchWindowController.h"
+#import "SettingsWindowController.h"
+#import "SwellHeaderView.h"
 #import "Theme.h"
 #import "Toolbar.h"
 #import "BlocklistDownloader.h"
@@ -71,6 +74,9 @@ static ToolbarItemIdentifier const ToolbarItemIdentifierPauseResumeSelected = @"
 static ToolbarItemIdentifier const ToolbarItemIdentifierFilter = @"Toolbar Toggle Filter";
 static ToolbarItemIdentifier const ToolbarItemIdentifierQuickLook = @"Toolbar QuickLook";
 static ToolbarItemIdentifier const ToolbarItemIdentifierShare = @"Toolbar Share";
+static ToolbarItemIdentifier const ToolbarItemIdentifierSearch = @"Toolbar Search";
+static ToolbarItemIdentifier const ToolbarItemIdentifierAddLink = @"Toolbar Add Link";
+static ToolbarItemIdentifier const ToolbarItemIdentifierDetails = @"Toolbar Details";
 
 typedef NS_ENUM(NSUInteger, ToolbarGroupTag) { //
     ToolbarGroupTagPause = 0,
@@ -108,7 +114,7 @@ typedef NS_ENUM(NSUInteger, SortOrderTag) { //
 
 static NSString* const kTorrentTableViewDataType = @"TorrentTableViewDataType";
 
-static CGFloat const kRowHeightRegular = 68.0;
+static CGFloat const kRowHeightRegular = 88.0;
 static CGFloat const kRowHeightSmall = 22.0;
 
 static CGFloat const kStatusBarHeight = 24.0;
@@ -309,6 +315,10 @@ static void removeKeRangerRansomware()
 @property(nonatomic) StatusBarController* fStatusBar;
 
 @property(nonatomic) FilterBarController* fFilterBar;
+@property(nonatomic) SwellHeaderView* fHeaderView;
+@property(nonatomic) NSTextField* fEmptyField;
+@property(nonatomic) SearchWindowController* fSearchController;
+@property(nonatomic) SettingsWindowController* fSettingsController;
 
 @property(nonatomic) QLPreviewPanel* fPreviewPanel;
 @property(nonatomic) BOOL fQuitting;
@@ -350,7 +360,7 @@ static void removeKeRangerRansomware()
     {
         NSAlert* alert = [[NSAlert alloc] init];
         [alert addButtonWithTitle:NSLocalizedString(@"OK", "Transmission already running alert -> button")];
-        alert.messageText = NSLocalizedString(@"Transmission is already running.", "Transmission already running alert -> title");
+        alert.messageText = NSLocalizedString(@"Nagare is already running.", "Transmission already running alert -> title");
         alert.informativeText = NSLocalizedString(
             @"There is already a copy of Transmission running. "
              "This copy cannot be opened until that instance is quit.",
@@ -561,7 +571,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
         initUnits();
 
-        auto const default_config_dir = tr_getDefaultConfigDir("Transmission");
+        auto const default_config_dir = tr_getDefaultConfigDir("Nagare");
         _fLib = tr_sessionInit(default_config_dir, YES, settings);
         _fConfigDirectory = @(default_config_dir.c_str());
 
@@ -614,17 +624,134 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     return self;
 }
 
+- (void)layOutMainWindow
+{
+    [Theme styleWindow:self.fWindow];
+    self.fWindow.contentMinSize = NSMakeSize(780, 560);
+
+    NSView* content = self.fWindow.contentView;
+    NSScrollView* scrollView = self.fTableView.enclosingScrollView;
+    scrollView.drawsBackground = NO;
+    scrollView.automaticallyAdjustsContentInsets = NO;
+    scrollView.contentInsets = NSEdgeInsetsMake(0, 0, 12, 0);
+
+    // The bottom bar's job moved into the filter row.
+    NSView* bottomBar = self.fActionButton.superview;
+    bottomBar.hidden = YES;
+    for (NSLayoutConstraint* constraint in bottomBar.constraints)
+    {
+        if (constraint.firstAttribute == NSLayoutAttributeHeight && constraint.secondItem == nil)
+        {
+            constraint.constant = 0;
+        }
+    }
+    for (NSLayoutConstraint* constraint in content.constraints)
+    {
+        if (constraint.firstItem == scrollView && constraint.firstAttribute == NSLayoutAttributeTop)
+        {
+            constraint.active = NO;
+        }
+    }
+
+    self.fHeaderView = [[SwellHeaderView alloc] initWithFrame:NSMakeRect(0, 0, 900, 254)];
+    self.fHeaderView.translatesAutoresizingMaskIntoConstraints = NO;
+    [content addSubview:self.fHeaderView];
+
+    self.fFilterBar = [[FilterBarController alloc] init];
+    NSView* filters = self.fFilterBar.view;
+    [content addSubview:filters];
+
+    self.fEmptyField = [Theme labelWithFont:[Theme displayFontOfSize:17] color:Theme.foreground];
+    self.fEmptyField.stringValue = NSLocalizedString(@"Drop a torrent here, or search for one", "Main window -> empty state");
+    [content addSubview:self.fEmptyField];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [self.fHeaderView.leadingAnchor constraintEqualToAnchor:content.leadingAnchor constant:8],
+        [self.fHeaderView.trailingAnchor constraintEqualToAnchor:content.trailingAnchor constant:-8],
+        [self.fHeaderView.topAnchor constraintEqualToAnchor:content.topAnchor constant:8],
+        [self.fHeaderView.heightAnchor constraintEqualToConstant:254],
+        [filters.leadingAnchor constraintEqualToAnchor:content.leadingAnchor constant:24],
+        [filters.trailingAnchor constraintEqualToAnchor:content.trailingAnchor constant:-24],
+        [filters.topAnchor constraintEqualToAnchor:self.fHeaderView.bottomAnchor constant:12],
+        [scrollView.topAnchor constraintEqualToAnchor:filters.bottomAnchor constant:8],
+        [self.fEmptyField.centerXAnchor constraintEqualToAnchor:scrollView.centerXAnchor],
+        [self.fEmptyField.centerYAnchor constraintEqualToAnchor:scrollView.centerYAnchor],
+    ]];
+}
+
+- (void)simplifyMenus
+{
+    // These drove views that no longer exist.
+    NSArray<NSString*>* removed = @[
+        @"toggleSmallView:", @"togglePiecesBar:", @"toggleAvailabilityBar:", @"toggleStatusBar:", @"toggleFilterBar:", @"toggleToolbarShown:",
+        @"runToolbarCustomizationPalette:", @"linkDonate:"
+    ];
+
+    __block void (^walk)(NSMenu*) = nil;
+    void (^__block __weak weakWalk)(NSMenu*) = nil;
+    weakWalk = walk = ^(NSMenu* menu) {
+        for (NSMenuItem* item in menu.itemArray.reverseObjectEnumerator)
+        {
+            if (item.action != nil && [removed containsObject:NSStringFromSelector(item.action)])
+            {
+                [menu removeItem:item];
+                continue;
+            }
+            item.image = nil;
+            if (item.submenu != nil)
+            {
+                weakWalk(item.submenu);
+            }
+        }
+    };
+    walk(NSApp.mainMenu);
+
+    // Separators left stranded by the removals.
+    for (NSMenuItem* top in NSApp.mainMenu.itemArray)
+    {
+        NSMenu* menu = top.submenu;
+        for (NSInteger index = menu.numberOfItems - 1; index >= 0; --index)
+        {
+            NSMenuItem* item = [menu itemAtIndex:index];
+            if (item.separatorItem && (index == 0 || index == menu.numberOfItems - 1 || [menu itemAtIndex:index - 1].separatorItem))
+            {
+                [menu removeItemAtIndex:index];
+            }
+        }
+    }
+
+    for (NSMenuItem* top in NSApp.mainMenu.itemArray)
+    {
+        NSInteger const index = [top.submenu indexOfItemWithTarget:self andAction:@selector(openURLShowSheet:)];
+        if (index >= 0)
+        {
+            NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search…", "File menu -> search") action:@selector(showSearchWindow:) keyEquivalent:@"k"];
+            item.target = self;
+            [top.submenu insertItem:item atIndex:index + 1];
+            break;
+        }
+    }
+}
+
+- (void)showSearchWindow:(id)sender
+{
+    if (self.fSearchController == nil)
+    {
+        self.fSearchController = [[SearchWindowController alloc] initWithController:self];
+    }
+    [self.fSearchController present];
+}
+
 - (void)awakeFromNib
 {
     [super awakeFromNib];
 
     [Theme applySavedMode];
-    [Theme addThemeMenu];
 
     Toolbar* toolbar = [[Toolbar alloc] initWithIdentifier:@"TRMainToolbar"];
     toolbar.delegate = self;
-    toolbar.allowsUserCustomization = YES;
-    toolbar.autosavesConfiguration = YES;
+    toolbar.allowsUserCustomization = NO;
+    toolbar.autosavesConfiguration = NO;
     toolbar.displayMode = NSToolbarDisplayModeIconOnly;
     self.fWindow.toolbar = toolbar;
 
@@ -644,14 +771,15 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     self.fTableView.rowHeight = small ? kRowHeightSmall : kRowHeightRegular;
     self.fTableView.usesAutomaticRowHeights = NO;
     self.fTableView.floatsGroupRows = YES;
-    self.fTableView.backgroundColor = Theme.panel;
+    self.fTableView.backgroundColor = NSColor.clearColor;
     self.fTableView.style = NSTableViewStyleFullWidth;
     self.fTableView.gridStyleMask = NSTableViewGridNone;
+    self.fTableView.intercellSpacing = NSZeroSize;
+    [self layOutMainWindow];
     //self.fTableView.usesAlternatingRowBackgroundColors = !small;
 
     self.fWindow.movableByWindowBackground = YES;
 
-    self.fTotalTorrentsField.cell.backgroundStyle = NSBackgroundStyleRaised;
 
     self.fActionButton.toolTip = NSLocalizedString(@"Shortcuts for changing global settings.", "Main window -> 1st bottom left button (action) tooltip");
     if (@available(macOS 26.0, *))
@@ -706,8 +834,6 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
     //you would think this would be called later in this method from updateUI, but it's not reached in awakeFromNib
     //this must be called after showStatusBar:
-    [self.fStatusBar updateWithDownload:0.0 upload:0.0];
-
     auto* const session = self.fLib;
 
     //load previous transfers
@@ -858,13 +984,16 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (void)applicationDidFinishLaunching:(NSNotification*)notification
 {
+    [Theme addThemeMenu];
+    [self simplifyMenus];
+
     //cover our asses
     if ([NSUserDefaults.standardUserDefaults boolForKey:@"WarningLegal"])
     {
         NSAlert* alert = [[NSAlert alloc] init];
         [alert addButtonWithTitle:NSLocalizedString(@"I Accept", "Legal alert -> button")];
         [alert addButtonWithTitle:NSLocalizedString(@"Quit", "Legal alert -> button")];
-        alert.messageText = NSLocalizedString(@"Welcome to Transmission", "Legal alert -> title");
+        alert.messageText = NSLocalizedString(@"Welcome to Nagare", "Legal alert -> title");
         alert.informativeText = NSLocalizedString(
             @"Transmission is a file-sharing program."
              " When you run a torrent, its data will be made available to others by means of upload."
@@ -2306,13 +2435,11 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (void)showPreferenceWindow:(id)sender
 {
-    NSWindow* window = _prefsController.window;
-    if (!window.visible)
+    if (self.fSettingsController == nil)
     {
-        [window center];
+        self.fSettingsController = [[SettingsWindowController alloc] initWithPrefs:self.prefsController];
     }
-
-    [window makeKeyAndOrderFront:nil];
+    [self.fSettingsController present];
 }
 
 - (void)showAboutWindow:(id)sender
@@ -2407,15 +2534,15 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
     PowerManager.shared.shouldPreventSleep = anyActive && [self.fDefaults boolForKey:@"SleepPrevent"];
 
+    [self.fHeaderView recordDownload:dlRate upload:ulRate];
+
     if (!NSApp.hidden)
     {
         if (self.fWindow.visible)
         {
             [self sortTorrentsAndIncludeQueueOrder:NO];
 
-            [self.fStatusBar updateWithDownload:dlRate upload:ulRate];
-
-            self.fClearCompletedButton.hidden = !anyCompleted;
+            [self.fHeaderView refresh];
         }
 
         //update non-constant parts of info window
@@ -2466,7 +2593,8 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
                                                          totalTorrentsString];
     }
 
-    self.fTotalTorrentsField.stringValue = totalTorrentsString;
+    [self.fFilterBar setTotalText:totalTorrentsString];
+    self.fEmptyField.hidden = self.fTorrents.count > 0;
 }
 
 #pragma mark - UNUserNotificationCenterDelegate
@@ -4041,7 +4169,6 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 - (void)togglePiecesBar:(id)sender
 {
     [self.fDefaults setBool:![self.fDefaults boolForKey:@"PiecesBar"] forKey:@"PiecesBar"];
-    [self.fTableView togglePiecesBar];
 }
 
 - (void)toggleAvailabilityBar:(id)sender
@@ -4052,14 +4179,14 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (void)toggleStatusBar:(id)sender
 {
-    BOOL const show = self.fStatusBar == nil || self.fStatusBar.isHidden;
+    BOOL const show = NO;
     [self.fDefaults setBool:show forKey:@"StatusBar"];
     [self updateMainWindow];
 }
 
 - (void)toggleFilterBar:(id)sender
 {
-    BOOL const show = self.fFilterBar == nil || self.fFilterBar.isHidden;
+    BOOL const show = NO;
 
     //disable filtering when hiding (have to do before updateMainWindow:)
     if (!show)
@@ -4078,11 +4205,11 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (void)focusFilterField
 {
-    if (self.fFilterBar == nil || self.fFilterBar.isHidden)
+    if (self.fFilterBar == nil)
     {
         [self toggleFilterBar:self];
     }
-    [self.fFilterBar focusSearchField];
+    [self showSearchWindow:nil];
 }
 
 - (BOOL)acceptsPreviewPanelControl:(QLPreviewPanel*)panel
@@ -4229,8 +4356,33 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     return item;
 }
 
+- (NSToolbarItem*)glassToolbarItem:(NSString*)ident icon:(NSString*)icon label:(NSString*)label action:(SEL)action
+{
+    NSToolbarItem* item = [[NSToolbarItem alloc] initWithItemIdentifier:ident];
+    item.image = [Theme icon:icon];
+    item.label = label;
+    item.toolTip = label;
+    item.target = self;
+    item.action = action;
+    item.bordered = YES;
+    return item;
+}
+
 - (NSToolbarItem*)toolbar:(NSToolbar*)toolbar itemForItemIdentifier:(NSString*)ident willBeInsertedIntoToolbar:(BOOL)flag
 {
+    if ([ident isEqualToString:ToolbarItemIdentifierSearch])
+    {
+        return [self glassToolbarItem:ident icon:@"Search" label:NSLocalizedString(@"Search", "Toolbar") action:@selector(showSearchWindow:)];
+    }
+    if ([ident isEqualToString:ToolbarItemIdentifierAddLink])
+    {
+        return [self glassToolbarItem:ident icon:@"Link" label:NSLocalizedString(@"Add a Link", "Toolbar") action:@selector(openURLShowSheet:)];
+    }
+    if ([ident isEqualToString:ToolbarItemIdentifierDetails])
+    {
+        return [self glassToolbarItem:ident icon:@"Info" label:NSLocalizedString(@"Details", "Toolbar") action:@selector(showInfo:)];
+    }
+
     if ([ident isEqualToString:ToolbarItemIdentifierCreate])
     {
         ButtonToolbarItem* item = [self standardToolbarButtonWithIdentifier:ident];
@@ -4476,6 +4628,9 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 - (NSArray*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
 {
     return @[
+        ToolbarItemIdentifierSearch,
+        ToolbarItemIdentifierAddLink,
+        ToolbarItemIdentifierDetails,
         ToolbarItemIdentifierCreate,
         ToolbarItemIdentifierOpenFile,
         ToolbarItemIdentifierOpenWeb,
@@ -4493,18 +4648,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (NSArray*)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
-    return @[
-        ToolbarItemIdentifierCreate,
-        ToolbarItemIdentifierOpenFile,
-        ToolbarItemIdentifierRemove,
-        NSToolbarSpaceItemIdentifier,
-        ToolbarItemIdentifierPauseResumeAll,
-        NSToolbarFlexibleSpaceItemIdentifier,
-        ToolbarItemIdentifierShare,
-        ToolbarItemIdentifierQuickLook,
-        ToolbarItemIdentifierFilter,
-        ToolbarItemIdentifierInfo,
-    ];
+    return @[ NSToolbarFlexibleSpaceItemIdentifier, ToolbarItemIdentifierSearch, ToolbarItemIdentifierAddLink, ToolbarItemIdentifierDetails ];
 }
 
 - (BOOL)validateToolbarItem:(NSToolbarItem*)toolbarItem
@@ -4579,7 +4723,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     //set filter item
     if ([ident isEqualToString:ToolbarItemIdentifierFilter])
     {
-        BOOL shown = !(self.fFilterBar == nil || self.fFilterBar.isHidden);
+        BOOL shown = NO;
         ((NSButton*)toolbarItem.view).state = shown ? NSControlStateValueOn : NSControlStateValueOff;
         return YES;
     }
@@ -4714,7 +4858,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     }
 
     //enable toggle status bar
-    BOOL statusBarVisible = self.fStatusBar && !self.fStatusBar.isHidden;
+    BOOL statusBarVisible = NO;
     if (action == @selector(toggleStatusBar:))
     {
         NSString* title = !statusBarVisible ? NSLocalizedString(@"Show Status Bar", "View menu -> Status Bar") :
@@ -4725,7 +4869,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     }
 
     //enable toggle filter bar
-    BOOL filterBarVisible = self.fFilterBar && !self.fFilterBar.isHidden;
+    BOOL filterBarVisible = YES;
     if (action == @selector(toggleFilterBar:))
     {
         NSString* title = !filterBarVisible ? NSLocalizedString(@"Show Filter Bar", "View menu -> Filter Bar") :
@@ -4768,7 +4912,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     {
         BOOL warning = NO;
 
-        if (self.fFilterBar.isFocused == YES)
+        if (NO)
         {
             return NO;
         }
@@ -5106,43 +5250,6 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (void)updateMainWindow
 {
-    if (self.fStatusBar == nil)
-    {
-        self.fStatusBar = [[StatusBarController alloc] initWithLib:self.fLib];
-        self.fStatusBar.layoutAttribute = NSLayoutAttributeBottom;
-        self.fStatusBar.automaticallyAdjustsSize = NO;
-
-        [self.fWindow addTitlebarAccessoryViewController:self.fStatusBar];
-    }
-
-    if ([self.fDefaults boolForKey:@"StatusBar"])
-    {
-        self.fStatusBar.hidden = NO;
-    }
-    else
-    {
-        self.fStatusBar.hidden = YES;
-    }
-
-    if (self.fFilterBar == nil)
-    {
-        self.fFilterBar = [[FilterBarController alloc] init];
-        self.fFilterBar.layoutAttribute = NSLayoutAttributeBottom;
-        self.fFilterBar.automaticallyAdjustsSize = NO;
-
-        [self.fWindow addTitlebarAccessoryViewController:self.fFilterBar];
-    }
-
-    if ([self.fDefaults boolForKey:@"FilterBar"])
-    {
-        self.fFilterBar.hidden = NO;
-        [self focusFilterField];
-    }
-    else
-    {
-        self.fFilterBar.hidden = YES;
-    }
-
     [self fullUpdateUI];
     [self updateForAutoSize];
 }
@@ -5282,19 +5389,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (CGFloat)mainWindowComponentHeight
 {
-    CGFloat height = kBottomBarHeight;
-
-    if (self.fStatusBar != nil && !self.fStatusBar.isHidden)
-    {
-        height += kStatusBarHeight;
-    }
-
-    if (self.fFilterBar != nil && !self.fFilterBar.isHidden)
-    {
-        height += kFilterBarHeight;
-    }
-
-    return height;
+    return 12.0 + 254.0 + 12.0 + 36.0 + 8.0;
 }
 
 - (CGFloat)scrollViewHeight

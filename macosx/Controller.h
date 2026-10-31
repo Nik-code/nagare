@@ -44,6 +44,7 @@ typedef NS_ENUM(NSUInteger, AddType) { //
 
 - (void)openURL:(NSString*)urlString;
 - (IBAction)openURLShowSheet:(id)sender;
+- (IBAction)showSearchWindow:(id)sender;
 
 - (void)openPasteboard;
 

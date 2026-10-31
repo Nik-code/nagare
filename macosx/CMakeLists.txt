@@ -89,8 +89,6 @@ target_sources(${TR_NAME}-mac
         FileRenameSheetController.mm
         FilterBarController.h
         FilterBarController.mm
-        FilterButton.h
-        FilterButton.mm
         GlobalOptionsPopoverViewController.h
         GlobalOptionsPopoverViewController.mm
         GroupCell.h
@@ -151,16 +149,10 @@ target_sources(${TR_NAME}-mac
         PrefsWindow.mm
         PriorityPopUpButtonCell.h
         PriorityPopUpButtonCell.mm
-        ProgressBarView.h
-        ProgressBarView.mm
-        ProgressGradients.h
-        ProgressGradients.mm
         ShareToolbarItem.h
         ShareToolbarItem.mm
         ShareTorrentFileHelper.h
         ShareTorrentFileHelper.mm
-        SmallTorrentCell.h
-        SmallTorrentCell.mm
         StatsWindowController.h
         StatsWindowController.mm
         StatusBarController.h
@@ -171,14 +163,16 @@ target_sources(${TR_NAME}-mac
         Torrent.mm
         Theme.h
         Theme.mm
-        TorrentCell.h
-        TorrentCell.mm
-        TorrentCellActionButton.h
-        TorrentCellActionButton.mm
-        TorrentCellControlButton.h
-        TorrentCellControlButton.mm
-        TorrentCellRevealButton.h
-        TorrentCellRevealButton.mm
+        SwellHeaderView.h
+        SwellHeaderView.mm
+        DropletView.h
+        DropletView.mm
+        DropletCell.h
+        DropletCell.mm
+        SearchSource.h
+        SearchSource.mm
+        SearchWindowController.h
+        SearchWindowController.mm
         TorrentGroup.h
         TorrentGroup.mm
         TorrentTableView.h
@@ -200,7 +194,6 @@ set(XIB_FILES
     AboutWindow.xib
     BlocklistStatusWindow.xib
     FileRenameSheetController.xib
-    FilterBar.xib
     InfoFileView.xib
     InfoPeersView.xib
     InfoTrackersView.xib
