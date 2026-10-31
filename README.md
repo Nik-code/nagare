@@ -2,7 +2,7 @@
 
 Nagare (流れ, "flow") is a Liquid Glass torrent client for macOS. It is a redesigned fork of [Transmission](https://transmissionbt.com): the engine is Transmission's `libtransmission`, unchanged, and the Mac interface is new.
 
-![Nagare downloading public-domain films](docs/nagare/hero.png)
+![Nagare downloading public-domain films](docs/nagare/demo.gif)
 
 Short clips are attached to the [latest release](https://github.com/Nik-code/nagare/releases/latest).
 
