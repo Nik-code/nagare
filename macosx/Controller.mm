@@ -30,7 +30,7 @@
 #import "PrefsController.h"
 #import "GroupsController.h"
 #import "AboutWindowController.h"
-#import "URLSheetWindowController.h"
+#import "LinkPanelController.h"
 #import "AddWindowController.h"
 #import "AddMagnetWindowController.h"
 #import "MessageWindowController.h"
@@ -335,7 +335,7 @@ static void removeKeRangerRansomware()
 @property(nonatomic) NSMutableSet<Torrent*>* fAddingTransfers;
 
 @property(nonatomic) NSMutableSet<NSWindowController*>* fAddWindows;
-@property(nonatomic) URLSheetWindowController* fUrlSheetController;
+@property(nonatomic) LinkPanelController* fLinkController;
 
 @property(nonatomic) BOOL fGlobalPopoverShown;
 @property(nonatomic) NSView* fPositioningView;
@@ -1823,21 +1823,9 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (void)openURLShowSheet:(id)sender
 {
-    if (!self.fUrlSheetController)
+    if (self.fLinkController == nil)
     {
-        self.fUrlSheetController = [[URLSheetWindowController alloc] init];
-
-        [self.fWindow beginSheet:self.fUrlSheetController.window completionHandler:^(NSModalResponse returnCode) {
-            if (returnCode == 1)
-            {
-                NSString* urlString = self.fUrlSheetController.urlString;
-                urlString = [urlString stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self openURL:urlString];
-                });
-            }
-            self.fUrlSheetController = nil;
-        }];
+        self.fLinkController = [[LinkPanelController alloc] initWithController:self];
     }
 }
 
@@ -1860,6 +1848,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     // the raw text of a magnet link it can spuriously match a substring inside a percent-encoded `tr=` tracker
     // parameter as if it were an unrelated bare domain (e.g. matching "2Ftracker.opentrackr.org" out of
     // "udp%3A%2F%2Ftracker.opentrackr.org"), defaulting a bogus "http://" scheme onto it. Skipping any link match
+    [self.fLinkController present];
     // that overlaps a magnet match avoids that misfire while still opening a plain link genuinely pasted
     // alongside a magnet. See https://github.com/transmission/transmission/issues/8736
     NSDataDetector* linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];

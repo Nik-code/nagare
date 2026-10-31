@@ -173,6 +173,12 @@ target_sources(${TR_NAME}-mac
         SearchSource.mm
         SearchWindowController.h
         SearchWindowController.mm
+        GlassPanel.h
+        GlassPanel.mm
+        LinkPanelController.h
+        LinkPanelController.mm
+        PillBar.h
+        PillBar.mm
         TorrentGroup.h
         TorrentGroup.mm
         TorrentTableView.h
@@ -183,8 +189,6 @@ target_sources(${TR_NAME}-mac
         TrackerNode.mm
         TrackerTableView.h
         TrackerTableView.mm
-        URLSheetWindowController.h
-        URLSheetWindowController.mm
         Utils.h
         Utils.mm
         WebSeedTableView.h
@@ -201,7 +205,6 @@ set(XIB_FILES
     MessageWindow.xib
     StatsWindow.xib
     StatusBar.xib
-    URLSheetWindow.xib)
 
 set(RESOURCES
     Defaults.plist

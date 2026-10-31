@@ -5,6 +5,7 @@
 #import "AddMagnetWindowController.h"
 #import "Controller.h"
 #import "ExpandedPathToIconTransformer.h"
+#import "GlassPanel.h"
 #import "GroupsController.h"
 #import "NSStringAdditions.h"
 #import "Theme.h"
@@ -21,7 +22,7 @@ typedef NS_ENUM(NSUInteger, PopupPriority) {
 @property(nonatomic) IBOutlet NSImageView* fLocationImageView;
 @property(nonatomic) IBOutlet NSTextField* fNameField;
 @property(nonatomic) IBOutlet NSTextField* fLocationField;
-@property(nonatomic) IBOutlet NSButton* fStartCheck;
+@property(nonatomic) NSSwitch* fStartCheck;
 @property(nonatomic) IBOutlet NSPopUpButton* fGroupPopUp;
 @property(nonatomic) IBOutlet NSPopUpButton* fPriorityPopUp;
 
@@ -51,6 +52,83 @@ typedef NS_ENUM(NSUInteger, PopupPriority) {
     return self;
 }
 
+- (void)loadWindow
+{
+    GlassPanel* panel = [[GlassPanel alloc] initWithSize:NSMakeSize(540, 248) style:NSGlassEffectViewStyleRegular];
+    panel.cancelHandler = ^{
+        [self cancelAdd:nil];
+    };
+    self.window = panel;
+
+    self.fNameField = [Theme labelWithFont:[Theme displayFontOfSize:22] color:Theme.bright];
+    NSTextField* note = [Theme labelWithFont:[NSFont systemFontOfSize:13] color:Theme.foreground];
+    note.stringValue = NSLocalizedString(@"Magnet link. The file list arrives once it connects.", "Add magnet -> note");
+
+    self.fLocationImageView = [[NSImageView alloc] initWithFrame:NSZeroRect];
+    self.fLocationImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.fLocationField = [Theme labelWithFont:[NSFont systemFontOfSize:14] color:Theme.bright];
+    NSButton* change = [NSButton buttonWithTitle:NSLocalizedString(@"Change", "Add magnet -> button") target:self action:@selector(setDestination:)];
+    change.bezelStyle = NSBezelStyleGlass;
+    change.translatesAutoresizingMaskIntoConstraints = NO;
+
+    NSTextField* start = [Theme labelWithFont:[NSFont systemFontOfSize:14] color:Theme.bright];
+    start.stringValue = NSLocalizedString(@"Start right away", "Add magnet -> switch");
+    self.fStartCheck = [[NSSwitch alloc] initWithFrame:NSZeroRect];
+    self.fStartCheck.translatesAutoresizingMaskIntoConstraints = NO;
+
+    NSButton* cancel = [NSButton buttonWithTitle:NSLocalizedString(@"Cancel", "Add magnet -> button") target:self action:@selector(cancelAdd:)];
+    cancel.bezelStyle = NSBezelStyleGlass;
+    cancel.controlSize = NSControlSizeLarge;
+    cancel.translatesAutoresizingMaskIntoConstraints = NO;
+
+    NSButton* get = [NSButton buttonWithTitle:NSLocalizedString(@"Get", "Add magnet -> button") target:self action:@selector(add:)];
+    get.bezelStyle = NSBezelStyleGlass;
+    get.bezelColor = Theme.accent;
+    get.controlSize = NSControlSizeLarge;
+    get.keyEquivalent = @"\r";
+    get.translatesAutoresizingMaskIntoConstraints = NO;
+
+    // Groups and priority stay out of the way, but the controller still reads them.
+    self.fGroupPopUp = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+    self.fPriorityPopUp = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+    [self.fPriorityPopUp addItemsWithTitles:@[ @"High", @"Normal", @"Low" ]];
+
+    NSView* root = panel.root;
+    for (NSView* view in @[ self.fNameField, note, self.fLocationImageView, self.fLocationField, change, start, self.fStartCheck, cancel, get ])
+    {
+        [root addSubview:view];
+    }
+
+    [NSLayoutConstraint activateConstraints:@[
+        [self.fNameField.leadingAnchor constraintEqualToAnchor:root.leadingAnchor constant:28],
+        [self.fNameField.trailingAnchor constraintEqualToAnchor:root.trailingAnchor constant:-28],
+        [self.fNameField.topAnchor constraintEqualToAnchor:root.topAnchor constant:26],
+        [note.leadingAnchor constraintEqualToAnchor:self.fNameField.leadingAnchor],
+        [note.topAnchor constraintEqualToAnchor:self.fNameField.bottomAnchor constant:4],
+        [self.fLocationImageView.leadingAnchor constraintEqualToAnchor:self.fNameField.leadingAnchor],
+        [self.fLocationImageView.topAnchor constraintEqualToAnchor:note.bottomAnchor constant:20],
+        [self.fLocationImageView.widthAnchor constraintEqualToConstant:22],
+        [self.fLocationImageView.heightAnchor constraintEqualToConstant:22],
+        [self.fLocationField.leadingAnchor constraintEqualToAnchor:self.fLocationImageView.trailingAnchor constant:10],
+        [self.fLocationField.centerYAnchor constraintEqualToAnchor:self.fLocationImageView.centerYAnchor],
+        [self.fLocationField.trailingAnchor constraintLessThanOrEqualToAnchor:change.leadingAnchor constant:-12],
+        [change.trailingAnchor constraintEqualToAnchor:root.trailingAnchor constant:-28],
+        [change.centerYAnchor constraintEqualToAnchor:self.fLocationImageView.centerYAnchor],
+        [start.leadingAnchor constraintEqualToAnchor:self.fNameField.leadingAnchor],
+        [start.topAnchor constraintEqualToAnchor:self.fLocationImageView.bottomAnchor constant:18],
+        [self.fStartCheck.trailingAnchor constraintEqualToAnchor:root.trailingAnchor constant:-28],
+        [self.fStartCheck.centerYAnchor constraintEqualToAnchor:start.centerYAnchor],
+        [get.trailingAnchor constraintEqualToAnchor:root.trailingAnchor constant:-22],
+        [get.bottomAnchor constraintEqualToAnchor:root.bottomAnchor constant:-20],
+        [get.widthAnchor constraintGreaterThanOrEqualToConstant:76],
+        [cancel.trailingAnchor constraintEqualToAnchor:get.leadingAnchor constant:-10],
+        [cancel.bottomAnchor constraintEqualToAnchor:root.bottomAnchor constant:-20],
+    ]];
+
+    [self awakeFromNib];
+    [panel placeOverMainWindow];
+}
+
 - (void)awakeFromNib
 {
     [super awakeFromNib];
@@ -63,8 +141,6 @@ typedef NS_ENUM(NSUInteger, PopupPriority) {
 
     //disable fullscreen support
     self.window.collectionBehavior = NSWindowCollectionBehaviorFullScreenNone;
-
-    [Theme styleAddWindow:self.window nameField:self.fNameField];
 
     [self setGroupsMenu];
     [self.fGroupPopUp selectItemWithTag:self.fGroupValue];
@@ -174,7 +250,9 @@ typedef NS_ENUM(NSUInteger, PopupPriority) {
 
 - (void)cancelAdd:(id)sender
 {
-    [self.window performClose:sender];
+    // A borderless panel has no close button for performClose: to press.
+    [self windowShouldClose:self.window];
+    [self close];
 }
 
 //only called on cancel

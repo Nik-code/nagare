@@ -95,6 +95,9 @@
 		25F87BAC1D8A4092FDE06E38 /* InfoOverviewViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9823DC4E5AB070D5B2E3B5E9 /* InfoOverviewViewController.mm */; };
 		83276BD87E1A931C19C0EECF /* SettingsWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 86C30126F39941B2B7F6E238 /* SettingsWindowController.mm */; };
 		96DEEF16EA78C7A0DA0A83CC /* QBittorrentImporter.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2BC21EBD2C25C80A2D0BDEC2 /* QBittorrentImporter.mm */; };
+		EB8E55F27284D8454C856C18 /* GlassPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 10A3DF205DF095229857C77A /* GlassPanel.mm */; };
+		FD4EAD46B4EB93D5B87A625A /* PillBar.mm in Sources */ = {isa = PBXBuildFile; fileRef = F05F2BC8F11F5067DE0F49E2 /* PillBar.mm */; };
+		F408C5BFF9A90009D86C2A46 /* LinkPanelController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 91B3FE6EF9EEBD06F3393233 /* LinkPanelController.mm */; };
 		A2085DDC0C53BC74000BC3B7 /* AboutWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */; };
 		A209EAC61142CF28002B02D1 /* InfoActivityViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A209EAC31142CF28002B02D1 /* InfoActivityViewController.mm */; };
 		A209EAC71142CF28002B02D1 /* InfoGeneralViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A209EAC51142CF28002B02D1 /* InfoGeneralViewController.mm */; };
@@ -249,8 +252,6 @@
 		A2F35BCA15C5A0A100EBF632 /* GenerateThumbnailForURL.mm in Sources */ = {isa = PBXBuildFile; fileRef = A2F35BC915C5A0A100EBF632 /* GenerateThumbnailForURL.mm */; };
 		A2F35BCC15C5A0A100EBF632 /* GeneratePreviewForURL.mm in Sources */ = {isa = PBXBuildFile; fileRef = A2F35BCB15C5A0A100EBF632 /* GeneratePreviewForURL.mm */; };
 		A2F35BD415C5A19A00EBF632 /* libtransmission.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D18389709DEC0030047D688 /* libtransmission.a */; };
-		A2F7CF5513035F7B0016FF10 /* URLSheetWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = A2F7CF5413035F7B0016FF10 /* URLSheetWindow.xib */; };
-		A2F7CF5F13035FFD0016FF10 /* URLSheetWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A2F7CF5E13035FFD0016FF10 /* URLSheetWindowController.mm */; };
 		A2F8CD430F3D0F4A00DB356A /* miniupnpcstrings.h in Headers */ = {isa = PBXBuildFile; fileRef = A2F8CD420F3D0F4A00DB356A /* miniupnpcstrings.h */; };
 		A2FB057F0BFEB6800095564D /* DragOverlayView.mm in Sources */ = {isa = PBXBuildFile; fileRef = A2FB057D0BFEB6800095564D /* DragOverlayView.mm */; };
 		A2FB701C0D95CAEA0001F331 /* GroupsController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A2FB701B0D95CAEA0001F331 /* GroupsController.mm */; };
@@ -866,6 +867,12 @@
 		86C30126F39941B2B7F6E238 /* SettingsWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SettingsWindowController.mm; sourceTree = "<group>"; };
 		8FD55BB5FFC5F572C00877F2 /* QBittorrentImporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QBittorrentImporter.h; sourceTree = "<group>"; };
 		2BC21EBD2C25C80A2D0BDEC2 /* QBittorrentImporter.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = QBittorrentImporter.mm; sourceTree = "<group>"; };
+		5A6C6A0B8796E3F67C040840 /* GlassPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GlassPanel.h; sourceTree = "<group>"; };
+		10A3DF205DF095229857C77A /* GlassPanel.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = GlassPanel.mm; sourceTree = "<group>"; };
+		CC5D88E08EDA8F3A103A7593 /* PillBar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PillBar.h; sourceTree = "<group>"; };
+		F05F2BC8F11F5067DE0F49E2 /* PillBar.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PillBar.mm; sourceTree = "<group>"; };
+		5C05F0B721FC2574E212CCD5 /* LinkPanelController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LinkPanelController.h; sourceTree = "<group>"; };
+		91B3FE6EF9EEBD06F3393233 /* LinkPanelController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = LinkPanelController.mm; sourceTree = "<group>"; };
 		A2085DD90C53BC74000BC3B7 /* AboutWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AboutWindowController.h; sourceTree = "<group>"; };
 		A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AboutWindowController.mm; sourceTree = "<group>"; };
 		A209EAC21142CF28002B02D1 /* InfoActivityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoActivityViewController.h; sourceTree = "<group>"; };
@@ -1085,9 +1092,6 @@
 		A2F35BCD15C5A0A100EBF632 /* main.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cc; sourceTree = "<group>"; };
 		A2F35BCF15C5A0A100EBF632 /* QuickLookPlugin-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "QuickLookPlugin-Prefix.pch"; sourceTree = "<group>"; };
 		A2F35BE215C5A7F900EBF632 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		A2F7CF5413035F7B0016FF10 /* URLSheetWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = URLSheetWindow.xib; sourceTree = "<group>"; };
-		A2F7CF5D13035FFD0016FF10 /* URLSheetWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = URLSheetWindowController.h; sourceTree = "<group>"; };
-		A2F7CF5E13035FFD0016FF10 /* URLSheetWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = URLSheetWindowController.mm; sourceTree = "<group>"; };
 		A2F8951E0A2D4BA500ED2127 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		A2F8CD420F3D0F4A00DB356A /* miniupnpcstrings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = miniupnpcstrings.h; sourceTree = "<group>"; };
 		A2FB057C0BFEB6800095564D /* DragOverlayView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DragOverlayView.h; sourceTree = "<group>"; };
@@ -1711,10 +1715,14 @@
 				86C30126F39941B2B7F6E238 /* SettingsWindowController.mm */,
 				8FD55BB5FFC5F572C00877F2 /* QBittorrentImporter.h */,
 				2BC21EBD2C25C80A2D0BDEC2 /* QBittorrentImporter.mm */,
+				5A6C6A0B8796E3F67C040840 /* GlassPanel.h */,
+				10A3DF205DF095229857C77A /* GlassPanel.mm */,
+				CC5D88E08EDA8F3A103A7593 /* PillBar.h */,
+				F05F2BC8F11F5067DE0F49E2 /* PillBar.mm */,
+				5C05F0B721FC2574E212CCD5 /* LinkPanelController.h */,
+				91B3FE6EF9EEBD06F3393233 /* LinkPanelController.mm */,
 				A2085DD90C53BC74000BC3B7 /* AboutWindowController.h */,
 				A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */,
-				A2F7CF5D13035FFD0016FF10 /* URLSheetWindowController.h */,
-				A2F7CF5E13035FFD0016FF10 /* URLSheetWindowController.mm */,
 				A2966E8513DAF74C007B52DF /* GlobalOptionsPopoverViewController.h */,
 				A2966E8613DAF74C007B52DF /* GlobalOptionsPopoverViewController.mm */,
 				C81E411027F5BA8300652F56 /* Compatibility */,
@@ -1843,7 +1851,6 @@
 				A233BD680D8CF2C7007EE7B4 /* StatsWindow.xib */,
 				A231274B0D11D0B7003F9AFF /* AboutWindow.xib */,
 				A2E57AC51310831400A7DAB1 /* StatusBar.xib */,
-				A2F7CF5413035F7B0016FF10 /* URLSheetWindow.xib */,
 				A2D307B00D9EC9F50051FD27 /* BlocklistStatusWindow.xib */,
 				A209ECA1114319C3002B02D1 /* InfoWindow.xib */,
 				A209EAEA1142D294002B02D1 /* InfoGeneralView.xib */,
@@ -3183,7 +3190,6 @@
 				A209EC12114301C6002B02D1 /* InfoOptionsView.xib in Resources */,
 				A209ECA2114319C3002B02D1 /* InfoWindow.xib in Resources */,
 				A21F15AD11729A9F00CF5A9C /* AddMagnetWindow.xib in Resources */,
-				A2F7CF5513035F7B0016FF10 /* URLSheetWindow.xib in Resources */,
 				A2E57AC61310831400A7DAB1 /* StatusBar.xib in Resources */,
 				A220AF7B13D7CC460035C512 /* GlobalOptionsPopover.xib in Resources */,
 				6D18B848BB2E648CF5E84377 /* Nagare.icon in Resources */,
@@ -3466,6 +3472,9 @@
 				25F87BAC1D8A4092FDE06E38 /* InfoOverviewViewController.mm in Sources */,
 				83276BD87E1A931C19C0EECF /* SettingsWindowController.mm in Sources */,
 				96DEEF16EA78C7A0DA0A83CC /* QBittorrentImporter.mm in Sources */,
+				EB8E55F27284D8454C856C18 /* GlassPanel.mm in Sources */,
+				FD4EAD46B4EB93D5B87A625A /* PillBar.mm in Sources */,
+				F408C5BFF9A90009D86C2A46 /* LinkPanelController.mm in Sources */,
 				A2085DDC0C53BC74000BC3B7 /* AboutWindowController.mm in Sources */,
 				A257C1820CAD3003004E121C /* PeerTableView.mm in Sources */,
 				A2A6321B0CD9751700E3DA60 /* BadgeView.mm in Sources */,
@@ -3502,7 +3511,6 @@
 				A209EBF91142FEEE002B02D1 /* InfoOptionsViewController.mm in Sources */,
 				ED9862972B979AA2002F3035 /* Utils.mm in Sources */,
 				A21F15AC11729A8B00CF5A9C /* AddMagnetWindowController.mm in Sources */,
-				A2F7CF5F13035FFD0016FF10 /* URLSheetWindowController.mm in Sources */,
 				A2E57ABB1310822C00A7DAB1 /* StatusBarController.mm in Sources */,
 				A2E57BA713109E6B00A7DAB1 /* FilterBarController.mm in Sources */,
 				A2B5B4E91880665E0071A66A /* ShareTorrentFileHelper.mm in Sources */,

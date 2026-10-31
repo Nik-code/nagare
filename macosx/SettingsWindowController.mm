@@ -4,6 +4,7 @@
 
 #import "SettingsWindowController.h"
 #import "Controller.h"
+#import "PillBar.h"
 #import "PrefsController.h"
 #import "SearchSource.h"
 #import "Theme.h"
@@ -305,14 +306,13 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
 
 - (NSView*)generalSection
 {
-    NSSegmentedControl* appearance = [NSSegmentedControl segmentedControlWithLabels:@[
+    PillBar* appearance = [[PillBar alloc] initWithLabels:@[
         NSLocalizedString(@"Match system", "Settings -> appearance"),
         NSLocalizedString(@"Light", "Settings -> appearance"),
         NSLocalizedString(@"Dark", "Settings -> appearance"),
     ]
-                                                                       trackingMode:NSSegmentSwitchTrackingSelectOne
-                                                                             target:self
-                                                                             action:@selector(setAppearance:)];
+                                                   target:self
+                                                   action:@selector(setAppearance:)];
     appearance.selectedSegment = Theme.mode;
 
     return [self stackOfRows:@[
@@ -570,7 +570,7 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
 
 #pragma mark - Actions
 
-- (void)setAppearance:(NSSegmentedControl*)sender
+- (void)setAppearance:(PillBar*)sender
 {
     Theme.mode = static_cast<ThemeMode>(sender.selectedSegment);
 }

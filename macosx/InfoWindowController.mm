@@ -5,6 +5,7 @@
 #import "InfoWindowController.h"
 #import "InfoViewController.h"
 #import "InfoOverviewViewController.h"
+#import "PillBar.h"
 #import "Theme.h"
 #import "InfoTrackersViewController.h"
 #import "InfoPeersViewController.h"
@@ -43,6 +44,7 @@ typedef NS_ENUM(NSUInteger, TabTag) {
 @property(nonatomic) NSViewController<InfoViewController>* fViewController;
 @property(nonatomic) NSInteger fCurrentTabTag;
 @property(nonatomic) IBOutlet NSSegmentedControl* fTabs;
+@property(nonatomic) PillBar* fPills;
 
 @property(nonatomic) InfoOverviewViewController* fGeneralViewController;
 @property(nonatomic) InfoTrackersViewController* fTrackersViewController;
@@ -114,6 +116,15 @@ typedef NS_ENUM(NSUInteger, TabTag) {
         [self.fTabs setLabel:labels[index] forSegment:index];
         [self.fTabs setTag:index forSegment:index];
     }
+
+    // The segmented control keeps the tab state; the pills are what's shown.
+    self.fTabs.hidden = YES;
+    self.fPills = [[PillBar alloc] initWithLabels:labels target:self action:@selector(pillChosen:)];
+    [window.contentView addSubview:self.fPills];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.fPills.leadingAnchor constraintEqualToAnchor:self.fTabs.leadingAnchor],
+        [self.fPills.centerYAnchor constraintEqualToAnchor:self.fTabs.centerYAnchor],
+    ]];
 
     //set selected tab
     self.fCurrentTabTag = kInvalidTag;
@@ -216,10 +227,17 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     }
 }
 
+- (void)pillChosen:(PillBar*)sender
+{
+    self.fTabs.selectedSegment = sender.selectedSegment;
+    [self setTab:nil];
+}
+
 - (void)setTab:(id)sender
 {
     NSInteger const oldTabTag = self.fCurrentTabTag;
     self.fCurrentTabTag = self.fTabs.selectedSegment;
+    self.fPills.selectedSegment = self.fTabs.selectedSegment;
     if (self.fCurrentTabTag == oldTabTag)
     {
         return;

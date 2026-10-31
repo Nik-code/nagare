@@ -3,6 +3,7 @@
 // License text can be found in the licenses/ folder.
 
 #import "FilterBarController.h"
+#import "PillBar.h"
 #import "Theme.h"
 
 FilterType const FilterTypeNone = @"None";
@@ -18,7 +19,7 @@ FilterSearchType const FilterSearchTypeTracker = @"Tracker";
 NSInteger const kGroupFilterAllTag = -2;
 
 @interface FilterBarController ()
-@property(nonatomic) NSSegmentedControl* fFilters;
+@property(nonatomic) PillBar* fFilters;
 @property(nonatomic) NSTextField* fTotalField;
 @property(nonatomic, copy) NSArray<FilterType>* fTypes;
 @end
@@ -37,11 +38,7 @@ NSInteger const kGroupFilterAllTag = -2;
 
     self.fTypes = @[ FilterTypeNone, FilterTypeDownload, FilterTypeSeed, FilterTypePause ];
 
-    self.fFilters = [NSSegmentedControl segmentedControlWithLabels:@[ @"All", @"Downloading", @"Seeding", @"Paused" ]
-                                                      trackingMode:NSSegmentSwitchTrackingSelectOne
-                                                            target:self
-                                                            action:@selector(setFilter:)];
-    self.fFilters.translatesAutoresizingMaskIntoConstraints = NO;
+    self.fFilters = [[PillBar alloc] initWithLabels:@[ @"All", @"Downloading", @"Seeding", @"Paused" ] target:self action:@selector(setFilter:)];
     [view addSubview:self.fFilters];
 
     self.fTotalField = [Theme labelWithFont:[NSFont systemFontOfSize:13] color:Theme.foreground];
@@ -65,7 +62,6 @@ NSInteger const kGroupFilterAllTag = -2;
         [NSUserDefaults.standardUserDefaults setObject:current forKey:@"Filter"];
     }
     self.fFilters.selectedSegment = [self.fTypes indexOfObject:current];
-    [self.fFilters setToolTip:NSLocalizedString(@"Show every transfer", "Filter bar") forSegment:0];
 }
 
 - (void)setFilter:(id)sender
@@ -80,7 +76,7 @@ NSInteger const kGroupFilterAllTag = -2;
 
 - (void)switchFilter:(BOOL)right
 {
-    NSInteger const count = self.fFilters.segmentCount;
+    NSInteger const count = static_cast<NSInteger>(self.fTypes.count);
     self.fFilters.selectedSegment = (self.fFilters.selectedSegment + (right ? 1 : count - 1)) % count;
     [self setFilter:self.fFilters];
 }
@@ -109,30 +105,25 @@ NSInteger const kGroupFilterAllTag = -2;
              paused:(NSUInteger)paused
               error:(NSUInteger)error
 {
-    // The fifth segment only exists while something has gone wrong.
+    // Problems only get a pill while something has gone wrong.
     BOOL const showProblems = error > 0 || [[NSUserDefaults.standardUserDefaults stringForKey:@"Filter"] isEqualToString:FilterTypeError];
-    if (showProblems != (self.fFilters.segmentCount == 5))
-    {
-        self.fFilters.segmentCount = showProblems ? 5 : 4;
-        self.fTypes = showProblems ? @[ FilterTypeNone, FilterTypeDownload, FilterTypeSeed, FilterTypePause, FilterTypeError ] :
-                                     @[ FilterTypeNone, FilterTypeDownload, FilterTypeSeed, FilterTypePause ];
-    }
+    self.fTypes = showProblems ? @[ FilterTypeNone, FilterTypeDownload, FilterTypeSeed, FilterTypePause, FilterTypeError ] :
+                                 @[ FilterTypeNone, FilterTypeDownload, FilterTypeSeed, FilterTypePause ];
 
     NSString* (^label)(NSString*, NSUInteger) = ^(NSString* title, NSUInteger count) {
         return count > 0 ? [NSString stringWithFormat:@"%@ %lu", title, count] : title;
     };
-    [self.fFilters setLabel:NSLocalizedString(@"All", "Filter bar") forSegment:0];
-    [self.fFilters setLabel:label(NSLocalizedString(@"Downloading", "Filter bar"), downloading) forSegment:1];
-    [self.fFilters setLabel:label(NSLocalizedString(@"Seeding", "Filter bar"), seeding) forSegment:2];
-    [self.fFilters setLabel:label(NSLocalizedString(@"Paused", "Filter bar"), paused) forSegment:3];
+    NSMutableArray<NSString*>* labels = [NSMutableArray arrayWithArray:@[
+        NSLocalizedString(@"All", "Filter bar"),
+        label(NSLocalizedString(@"Downloading", "Filter bar"), downloading),
+        label(NSLocalizedString(@"Seeding", "Filter bar"), seeding),
+        label(NSLocalizedString(@"Paused", "Filter bar"), paused),
+    ]];
     if (showProblems)
     {
-        [self.fFilters setLabel:label(NSLocalizedString(@"Problems", "Filter bar"), error) forSegment:4];
+        [labels addObject:label(NSLocalizedString(@"Problems", "Filter bar"), error)];
     }
-    for (NSInteger segment = 0; segment < self.fFilters.segmentCount; ++segment)
-    {
-        [self.fFilters setWidth:0 forSegment:segment];
-    }
+    self.fFilters.labels = labels;
 }
 
 @end
