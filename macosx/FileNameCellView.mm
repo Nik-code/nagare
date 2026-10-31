@@ -7,22 +7,17 @@
 
 #import "FileNameCellView.h"
 #import "FileListNode.h"
-#import "Torrent.h"
 #import "NSStringAdditions.h"
+#import "Theme.h"
+#import "Torrent.h"
 
-static CGFloat const kPaddingHorizontal = 2.0;
-static CGFloat const kImageFolderSize = 16.0;
-static CGFloat const kImageIconSize = 32.0;
-static CGFloat const kPaddingBetweenImageAndTitle = 4.0;
-static CGFloat const kPaddingAboveTitleFile = 2.0;
-static CGFloat const kPaddingBelowStatusFile = 2.0;
-static CGFloat const kPaddingBetweenNameAndFolderStatus = 4.0;
-
-@interface FileNameCellView ()
+@interface FileNameCellView ()<NSTextFieldDelegate>
 @property(nonatomic, weak) NSImageView* iconView;
 @property(nonatomic, weak) NSTextField* nameField;
 @property(nonatomic, weak) NSTextField* statusField;
-@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* dynamicConstraints;
+@property(nonatomic, weak) NSButton* renameButton;
+@property(nonatomic) NSTrackingArea* trackingArea;
+@property(nonatomic) BOOL renaming;
 @end
 
 @implementation FileNameCellView
@@ -31,63 +26,53 @@ static CGFloat const kPaddingBetweenNameAndFolderStatus = 4.0;
 {
     if ((self = [super initWithFrame:frameRect]))
     {
-        // Create icon view
         NSImageView* iconView = [[NSImageView alloc] initWithFrame:NSZeroRect];
         iconView.translatesAutoresizingMaskIntoConstraints = NO;
         iconView.imageScaling = NSImageScaleProportionallyDown;
+        iconView.contentTintColor = Theme.foreground;
         [self addSubview:iconView];
         _iconView = iconView;
 
-        // Create name field
-        NSTextField* nameField = [[NSTextField alloc] initWithFrame:NSZeroRect];
-        nameField.translatesAutoresizingMaskIntoConstraints = NO;
-        nameField.editable = NO;
-        nameField.selectable = NO;
-        nameField.bordered = NO;
-        nameField.backgroundColor = NSColor.clearColor;
-        nameField.font = [NSFont messageFontOfSize:12.0];
+        NSTextField* nameField = [Theme labelWithFont:[NSFont systemFontOfSize:13] color:Theme.bright];
         nameField.lineBreakMode = NSLineBreakByTruncatingMiddle;
-        [self addSubview:nameField];
+        nameField.focusRingType = NSFocusRingTypeNone;
+        nameField.delegate = self;
         _nameField = nameField;
         self.textField = nameField;
 
-        // Create status field
-        NSTextField* statusField = [[NSTextField alloc] initWithFrame:NSZeroRect];
-        statusField.translatesAutoresizingMaskIntoConstraints = NO;
-        statusField.editable = NO;
-        statusField.selectable = NO;
-        statusField.bordered = NO;
-        statusField.backgroundColor = NSColor.clearColor;
-        statusField.font = [NSFont messageFontOfSize:9.0];
-        statusField.textColor = NSColor.secondaryLabelColor;
-        statusField.lineBreakMode = NSLineBreakByTruncatingTail;
-        [self addSubview:statusField];
+        NSTextField* statusField = [Theme labelWithFont:[NSFont systemFontOfSize:11] color:Theme.foreground];
         _statusField = statusField;
 
-        // Setup constraints
-        [self setupConstraints];
+        NSStackView* text = [NSStackView stackViewWithViews:@[ nameField, statusField ]];
+        text.orientation = NSUserInterfaceLayoutOrientationVertical;
+        text.alignment = NSLayoutAttributeLeading;
+        text.spacing = 1;
+        text.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:text];
+
+        NSButton* renameButton = [Theme iconButton:@"Pencil" target:self action:@selector(beginRename)];
+        renameButton.toolTip = NSLocalizedString(@"Rename", "File list -> rename button");
+        renameButton.hidden = YES;
+        [self addSubview:renameButton];
+        _renameButton = renameButton;
+
+        [NSLayoutConstraint activateConstraints:@[
+            [iconView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:2],
+            [iconView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+            [iconView.widthAnchor constraintEqualToConstant:18],
+            [iconView.heightAnchor constraintEqualToConstant:18],
+            [text.leadingAnchor constraintEqualToAnchor:iconView.trailingAnchor constant:10],
+            [text.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+            [text.trailingAnchor constraintEqualToAnchor:renameButton.leadingAnchor constant:-6],
+            [nameField.widthAnchor constraintEqualToAnchor:text.widthAnchor],
+            [statusField.widthAnchor constraintEqualToAnchor:text.widthAnchor],
+            [renameButton.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-4],
+            [renameButton.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+            [renameButton.widthAnchor constraintEqualToConstant:24],
+            [renameButton.heightAnchor constraintEqualToConstant:24],
+        ]];
     }
     return self;
-}
-
-- (void)setupConstraints
-{
-    NSImageView* iconView = self.iconView;
-    NSTextField* nameField = self.nameField;
-
-    // Fixed constraints that don't change
-    [NSLayoutConstraint activateConstraints:@[
-        // Icon view constraints
-        [iconView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:kPaddingHorizontal],
-        [iconView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
-        [iconView.widthAnchor constraintEqualToConstant:kImageIconSize],
-        [iconView.heightAnchor constraintEqualToConstant:kImageIconSize],
-
-        // Name field leading constraint
-        [nameField.leadingAnchor constraintEqualToAnchor:iconView.trailingAnchor constant:kPaddingBetweenImageAndTitle],
-    ]];
-
-    self.dynamicConstraints = @[];
 }
 
 - (void)setNode:(FileListNode*)node
@@ -98,131 +83,113 @@ static CGFloat const kPaddingBetweenNameAndFolderStatus = 4.0;
 
 - (void)updateDisplay
 {
-    if (!self.node)
+    FileListNode* node = self.node;
+    if (node == nil || self.renaming)
     {
         return;
     }
 
-    FileListNode* node = self.node;
-
-    // Update icon
-    self.iconView.image = node.icon;
-
-    // Update icon size constraints based on folder/file
-    CGFloat const imageSize = node.isFolder ? kImageFolderSize : kImageIconSize;
-    for (NSLayoutConstraint* constraint in self.iconView.constraints)
-    {
-        if (constraint.firstAttribute == NSLayoutAttributeWidth || constraint.firstAttribute == NSLayoutAttributeHeight)
-        {
-            constraint.constant = imageSize;
-        }
-    }
-
-    // Update name
+    self.iconView.image = [Theme icon:node.isFolder ? @"Folder" : @"File"];
     self.nameField.stringValue = node.name;
 
-    // Update status
     Torrent* torrent = node.torrent;
     CGFloat const progress = [torrent fileProgress:node];
-    NSString* percentString = [NSString percentString:progress longDecimals:YES];
+    NSString* size = [NSString stringForFileSize:node.size];
+    self.statusField.stringValue = progress > 0.0 ?
+        [NSString stringWithFormat:NSLocalizedString(@"%@ of %@", "Inspector -> Files tab -> file status string"),
+                                   [NSString percentString:progress longDecimals:YES],
+                                   size] :
+        size;
 
-    NSString* status = [NSString stringWithFormat:NSLocalizedString(@"%@ of %@", "Inspector -> Files tab -> file status string"),
-                                                  percentString,
-                                                  [NSString stringForFileSize:node.size]];
-    self.statusField.stringValue = status;
+    BOOL const wanted = [torrent checkForFiles:node.indexes] != NSControlStateValueOff;
+    self.nameField.textColor = wanted ? Theme.bright : Theme.foreground;
 
-    // Update layout constraints based on folder vs file
-    [NSLayoutConstraint deactivateConstraints:self.dynamicConstraints];
-
-    NSTextField* nameField = self.nameField;
-    NSTextField* statusField = self.statusField;
-
-    if (node.isFolder)
-    {
-        // For folders, status appears next to name, both centered
-        self.statusField.hidden = NO;
-        self.dynamicConstraints = @[
-            [nameField.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
-            [nameField.trailingAnchor constraintLessThanOrEqualToAnchor:statusField.leadingAnchor
-                                                               constant:-kPaddingBetweenNameAndFolderStatus],
-
-            [statusField.leadingAnchor constraintEqualToAnchor:nameField.trailingAnchor constant:kPaddingBetweenNameAndFolderStatus],
-            [statusField.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
-            [statusField.trailingAnchor constraintLessThanOrEqualToAnchor:self.trailingAnchor],
-        ];
-    }
-    else
-    {
-        // For files, status appears below name
-        self.statusField.hidden = NO;
-        self.dynamicConstraints = @[
-            [nameField.topAnchor constraintEqualToAnchor:self.topAnchor constant:kPaddingAboveTitleFile],
-            [nameField.trailingAnchor constraintLessThanOrEqualToAnchor:self.trailingAnchor],
-
-            [statusField.leadingAnchor constraintEqualToAnchor:nameField.leadingAnchor],
-            [statusField.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-            [statusField.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-kPaddingBelowStatusFile],
-        ];
-    }
-
-    [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
-
-    // Update colors based on background style and check state
-    [self updateColors];
-
-    // Update tooltip
-    [self updateTooltip];
+    self.toolTip = [torrent fileLocation:node] ?: [node.path stringByAppendingPathComponent:node.name];
 }
 
-- (void)updateTooltip
+- (void)updateTrackingAreas
 {
-    if (!self.node)
+    [super updateTrackingAreas];
+    if (self.trackingArea != nil)
+    {
+        [self removeTrackingArea:self.trackingArea];
+    }
+    self.trackingArea = [[NSTrackingArea alloc] initWithRect:NSZeroRect
+                                                     options:NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways | NSTrackingInVisibleRect
+                                                       owner:self
+                                                    userInfo:nil];
+    [self addTrackingArea:self.trackingArea];
+}
+
+- (void)mouseEntered:(NSEvent*)event
+{
+    self.renameButton.hidden = self.renaming;
+}
+
+- (void)mouseExited:(NSEvent*)event
+{
+    self.renameButton.hidden = YES;
+}
+
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    self.renameButton.hidden = YES;
+}
+
+#pragma mark - Renaming
+
+- (void)beginRename
+{
+    FileListNode* node = self.node;
+    if (node == nil || self.renaming)
     {
         return;
     }
 
-    FileListNode* node = self.node;
-    Torrent* torrent = node.torrent;
+    [self.delegate fileCellWillRename:self];
+    self.renaming = YES;
+    self.renameButton.hidden = YES;
+    self.nameField.editable = YES;
+    self.nameField.selectable = YES;
+    [self.window makeFirstResponder:self.nameField];
 
-    NSString* path = [torrent fileLocation:node];
-    if (!path)
-    {
-        path = [node.path stringByAppendingPathComponent:node.name];
-    }
-    self.toolTip = path;
+    NSString* name = self.nameField.stringValue;
+    NSUInteger const stem = node.isFolder ? name.length : name.stringByDeletingPathExtension.length;
+    self.nameField.currentEditor.selectedRange = NSMakeRange(0, stem);
 }
 
-- (void)setBackgroundStyle:(NSBackgroundStyle)backgroundStyle
+- (void)finishRenameWithName:(NSString*)name
 {
-    [super setBackgroundStyle:backgroundStyle];
-    [self updateColors];
-}
-
-- (void)updateColors
-{
-    if (!self.node)
+    if (!self.renaming)
     {
         return;
     }
 
-    FileListNode* node = self.node;
-    Torrent* torrent = node.torrent;
+    self.renaming = NO;
+    self.nameField.editable = NO;
+    self.nameField.selectable = NO;
 
-    if (self.backgroundStyle == NSBackgroundStyleEmphasized)
+    NSString* trimmed = [name stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    BOOL const changed = trimmed.length > 0 && ![trimmed isEqualToString:self.node.name];
+    [self.delegate fileCell:self didFinishRenamingTo:changed ? trimmed : nil];
+    [self updateDisplay];
+}
+
+- (void)controlTextDidEndEditing:(NSNotification*)notification
+{
+    [self finishRenameWithName:self.nameField.stringValue];
+}
+
+- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView doCommandBySelector:(SEL)commandSelector
+{
+    if (commandSelector == @selector(cancelOperation:))
     {
-        self.nameField.textColor = NSColor.whiteColor;
-        self.statusField.textColor = NSColor.whiteColor;
+        [self.nameField abortEditing];
+        [self finishRenameWithName:nil];
+        return YES;
     }
-    else if ([torrent checkForFiles:node.indexes] == NSControlStateValueOff)
-    {
-        self.nameField.textColor = NSColor.disabledControlTextColor;
-        self.statusField.textColor = NSColor.disabledControlTextColor;
-    }
-    else
-    {
-        self.nameField.textColor = NSColor.controlTextColor;
-        self.statusField.textColor = NSColor.secondaryLabelColor;
-    }
+    return NO;
 }
 
 @end

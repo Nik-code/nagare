@@ -15,14 +15,6 @@
 
 @implementation FileOutlineView
 
-- (void)awakeFromNib
-{
-    [super awakeFromNib];
-
-    self.autoresizesOutlineColumn = NO;
-    self.indentationPerLevel = 14.0;
-}
-
 - (void)mouseDown:(NSEvent*)event
 {
     [self.window makeKeyWindow];

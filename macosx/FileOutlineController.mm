@@ -9,11 +9,11 @@
 #import "FileNameCellView.h"
 #import "FilePriorityCellView.h"
 #import "FileCheckCellView.h"
-#import "FileRenameSheetController.h"
 #import "NSMutableArrayAdditions.h"
 #import "NSStringAdditions.h"
+#import "Theme.h"
 
-static CGFloat const kRowSmallHeight = 18.0;
+static CGFloat const kRowHeight = 44.0;
 
 typedef NS_ENUM(NSUInteger, FileCheckMenuTag) { //
     FileCheckMenuTagCheck,
@@ -26,11 +26,12 @@ typedef NS_ENUM(NSUInteger, FilePriorityMenuTag) { //
     FilePriorityMenuTagLow
 };
 
-@interface FileOutlineController ()<NSOutlineViewDelegate, NSOutlineViewDataSource, NSMenuItemValidation>
+@interface FileOutlineController ()<NSOutlineViewDelegate, NSOutlineViewDataSource, NSMenuItemValidation, FileNameCellDelegate>
 
 @property(nonatomic) NSMutableArray<FileListNode*>* fFileList;
 
-@property(nonatomic) IBOutlet FileOutlineView* fOutline;
+@property(nonatomic) FileOutlineView* fOutline;
+@property(nonatomic) BOOL fRenaming;
 
 @property(nonatomic, readonly) NSMenu* menu;
 
@@ -38,18 +39,46 @@ typedef NS_ENUM(NSUInteger, FilePriorityMenuTag) { //
 
 @implementation FileOutlineController
 
-- (void)awakeFromNib
+- (instancetype)initWithPriorities:(BOOL)priorities
 {
-    [super awakeFromNib];
-    self.fFileList = [[NSMutableArray alloc] init];
+    if ((self = [super init]))
+    {
+        _fFileList = [[NSMutableArray alloc] init];
 
-    //set table header tool tips
-    [self.fOutline tableColumnWithIdentifier:@"Check"].headerToolTip = NSLocalizedString(@"Download", "file table -> header tool tip");
-    [self.fOutline tableColumnWithIdentifier:@"Priority"].headerToolTip = NSLocalizedString(@"Priority", "file table -> header tool tip");
+        _fOutline = [[FileOutlineView alloc] initWithFrame:NSMakeRect(0, 0, 480, 240)];
+        [Theme styleList:_fOutline rowHeight:kRowHeight];
+        _fOutline.autoresizesOutlineColumn = NO;
+        _fOutline.indentationPerLevel = 14.0;
+        _fOutline.allowsMultipleSelection = YES;
 
-    self.fOutline.menu = self.menu;
+        NSTableColumn* name = [[NSTableColumn alloc] initWithIdentifier:@"Name"];
+        name.width = 400;
+        name.resizingMask = NSTableColumnAutoresizingMask;
+        [_fOutline addTableColumn:name];
+        _fOutline.outlineTableColumn = name;
 
-    self.torrent = nil;
+        if (priorities)
+        {
+            NSTableColumn* priority = [[NSTableColumn alloc] initWithIdentifier:@"Priority"];
+            priority.width = 30;
+            priority.resizingMask = NSTableColumnNoResizing;
+            [_fOutline addTableColumn:priority];
+        }
+
+        NSTableColumn* check = [[NSTableColumn alloc] initWithIdentifier:@"Check"];
+        check.width = 30;
+        check.resizingMask = NSTableColumnNoResizing;
+        [_fOutline addTableColumn:check];
+
+        _fOutline.dataSource = self;
+        _fOutline.delegate = self;
+        _fOutline.target = self;
+        _fOutline.doubleAction = @selector(doubleClicked:);
+        _fOutline.menu = self.menu;
+
+        _scrollView = [Theme scrollViewWithDocument:_fOutline];
+    }
+    return self;
 }
 
 - (FileOutlineView*)outlineView
@@ -64,6 +93,9 @@ typedef NS_ENUM(NSUInteger, FilePriorityMenuTag) { //
     [self.fFileList setArray:torrent.fileList ?: @[]];
 
     self.filterText = nil;
+
+    // A single file has nothing to tick: it's the whole transfer.
+    [self.fOutline tableColumnWithIdentifier:@"Check"].hidden = torrent != nil && !torrent.folder;
 
     [self.fOutline reloadData];
     [self.fOutline deselectAll:nil]; //do this after reloading the data #4575
@@ -190,6 +222,12 @@ typedef NS_ENUM(NSUInteger, FilePriorityMenuTag) { //
 
 - (void)reloadVisibleRows
 {
+    // Reloading would take the text field away from under the person typing.
+    if (self.fRenaming)
+    {
+        return;
+    }
+
     NSRect visibleRect = self.fOutline.visibleRect;
     NSRange range = [self.fOutline rowsInRect:visibleRect];
 
@@ -239,6 +277,7 @@ typedef NS_ENUM(NSUInteger, FilePriorityMenuTag) { //
             cellView = [[FileNameCellView alloc] initWithFrame:NSZeroRect];
             cellView.identifier = @"NameCell";
         }
+        cellView.delegate = self;
         cellView.node = node;
 
         return cellView;
@@ -285,16 +324,9 @@ typedef NS_ENUM(NSUInteger, FilePriorityMenuTag) { //
     }
 }
 
-- (CGFloat)outlineView:(NSOutlineView*)outlineView heightOfRowByItem:(id)item
+- (NSTableRowView*)outlineView:(NSOutlineView*)outlineView rowViewForItem:(id)item
 {
-    if (((FileListNode*)item).isFolder)
-    {
-        return kRowSmallHeight;
-    }
-    else
-    {
-        return outlineView.rowHeight;
-    }
+    return [[ThemedRowView alloc] initWithHairlineInset:0 selectionInset:0];
 }
 
 #pragma mark - Actions
@@ -407,27 +439,68 @@ typedef NS_ENUM(NSUInteger, FilePriorityMenuTag) { //
     NSIndexSet* indexes = self.fOutline.selectedRowIndexes;
     NSAssert(indexes.count == 1, @"1 file needs to be selected to rename, but %ld are selected", indexes.count);
 
-    FileListNode* node = [self.fOutline itemAtRow:indexes.firstIndex];
-    Torrent* torrent = node.torrent;
-    if (!torrent.folder)
+    [self beginRenameAtRow:indexes.firstIndex];
+}
+
+- (void)beginRenameAtRow:(NSInteger)row
+{
+    NSView* cell = [self.fOutline viewAtColumn:[self.fOutline columnWithIdentifier:@"Name"] row:row makeIfNecessary:NO];
+    if ([cell isKindOfClass:FileNameCellView.class])
     {
-        [FileRenameSheetController presentSheetForTorrent:torrent modalForWindow:self.fOutline.window completionHandler:^(BOOL didRename) {
-            if (didRename)
-            {
-                [NSNotificationCenter.defaultCenter postNotificationName:@"UpdateTorrentsState" object:nil];
-                [NSNotificationCenter.defaultCenter postNotificationName:@"ResetInspector" object:self
-                                                                userInfo:@{ @"Torrent" : torrent }];
-            }
-        }];
+        [(FileNameCellView*)cell beginRename];
+    }
+}
+
+- (void)doubleClicked:(id)sender
+{
+    NSInteger const row = self.fOutline.clickedRow;
+    if (row < 0)
+    {
+        return;
+    }
+
+    if (self.doubleClickRenames)
+    {
+        [self beginRenameAtRow:row];
     }
     else
     {
-        [FileRenameSheetController presentSheetForFileListNode:node modalForWindow:self.fOutline.window completionHandler:^(BOOL didRename) {
-#warning instead of calling reset inspector, just resort?
-            if (didRename)
-                [NSNotificationCenter.defaultCenter postNotificationName:@"ResetInspector" object:self
-                                                                userInfo:@{ @"Torrent" : torrent }];
-        }];
+        [self revealFile:sender];
+    }
+}
+
+- (void)fileCellWillRename:(FileNameCellView*)cell
+{
+    self.fRenaming = YES;
+}
+
+- (void)fileCell:(FileNameCellView*)cell didFinishRenamingTo:(NSString*)name
+{
+    self.fRenaming = NO;
+    if (name == nil)
+    {
+        return;
+    }
+
+    FileListNode* node = cell.node;
+    Torrent* torrent = node.torrent;
+    void (^finished)(BOOL) = ^(BOOL didRename) {
+        if (!didRename)
+        {
+            NSBeep();
+        }
+        [self reloadVisibleRows];
+        [NSNotificationCenter.defaultCenter postNotificationName:@"UpdateTorrentsState" object:nil];
+        [NSNotificationCenter.defaultCenter postNotificationName:@"ResetInspector" object:self userInfo:@{ @"Torrent" : torrent }];
+    };
+
+    if (torrent.folder)
+    {
+        [torrent renameFileNode:node withName:name completionHandler:finished];
+    }
+    else
+    {
+        [torrent renameTorrent:name completionHandler:finished];
     }
 }
 

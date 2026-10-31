@@ -6,9 +6,9 @@
 
 @class FileListNode;
 
+/// Shows a file's priority as one quiet icon. Clicking it steps to the next priority.
 @interface FilePriorityCellView : NSTableCellView
 
 @property(nonatomic, weak) FileListNode* node;
-@property(nonatomic) BOOL hovered;
 
 @end
