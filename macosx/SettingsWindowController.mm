@@ -3,9 +3,12 @@
 // License text can be found in the licenses/ folder.
 
 #import "SettingsWindowController.h"
+#import "Controller.h"
 #import "PrefsController.h"
 #import "SearchSource.h"
 #import "Theme.h"
+
+#include <libtransmission/transmission.h>
 
 static CGFloat const kSidebarWidth = 212.0;
 
@@ -17,6 +20,25 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
     SettingsSectionAdvanced,
 };
 
+/// A quiet selection, so the sidebar's text stays readable on the glass.
+@interface SettingsSidebarRow : NSTableRowView
+@end
+
+@implementation SettingsSidebarRow
+
+- (NSBackgroundStyle)interiorBackgroundStyle
+{
+    return NSBackgroundStyleNormal;
+}
+
+- (void)drawSelectionInRect:(NSRect)dirtyRect
+{
+    [[Theme.bright colorWithAlphaComponent:0.1] setFill];
+    [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(self.bounds, 8.0, 1.0) xRadius:9.0 yRadius:9.0] fill];
+}
+
+@end
+
 @interface SettingsWindowController ()<NSTableViewDataSource, NSTableViewDelegate>
 @property(nonatomic, weak) PrefsController* fPrefs;
 @property(nonatomic) NSUserDefaults* fDefaults;
@@ -26,8 +48,6 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
 @property(nonatomic) NSView* fBody;
 @property(nonatomic) NSTextField* fFolderField;
 @property(nonatomic) NSTextField* fRatioField;
-@property(nonatomic) NSSegmentedControl* fAdvancedTabs;
-@property(nonatomic) NSView* fPaneHost;
 @end
 
 @implementation SettingsWindowController
@@ -162,6 +182,11 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
     return cell;
 }
 
+- (NSTableRowView*)tableView:(NSTableView*)tableView rowViewForRow:(NSInteger)row
+{
+    return [[SettingsSidebarRow alloc] init];
+}
+
 - (void)tableViewSelectionDidChange:(NSNotification*)notification
 {
     NSInteger const row = self.fSidebar.selectedRow;
@@ -187,7 +212,7 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
         body = [self transfersSection];
         break;
     case SettingsSectionSpeed:
-        body = [self embeddedPane:@"Bandwidth"];
+        body = [self speedSection];
         break;
     case SettingsSectionSources:
         body = [self sourcesSection];
@@ -358,72 +383,189 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
     return [self stackOfRows:rows];
 }
 
-- (NSView*)embeddedPane:(NSString*)name
+- (NSTextField*)numberFieldForKey:(NSString*)key
 {
-    NSView* pane = [self.fPrefs paneNamed:name];
-    [pane removeFromSuperview];
-    pane.autoresizingMask = NSViewNotSizable;
-    pane.hidden = NO;
+    NSTextField* field = [NSTextField textFieldWithString:[NSString stringWithFormat:@"%ld", [self.fDefaults integerForKey:key]]];
+    field.bezelStyle = NSTextFieldRoundedBezel;
+    field.alignment = NSTextAlignmentRight;
+    field.identifier = key;
+    field.target = self;
+    field.action = @selector(numberChanged:);
+    NSNumberFormatter* formatter = [[NSNumberFormatter alloc] init];
+    formatter.numberStyle = NSNumberFormatterNoStyle;
+    formatter.minimum = @0;
+    formatter.allowsFloats = NO;
+    field.formatter = formatter;
+    [field.widthAnchor constraintEqualToConstant:64].active = YES;
+    return field;
+}
 
-    NSSize const size = pane.frame.size;
-    NSView* host = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, size.width, size.height)];
-    [pane setFrameOrigin:NSZeroPoint];
-    [host addSubview:pane];
-    [host.heightAnchor constraintEqualToConstant:size.height].active = YES;
-    return host;
+/// A number, its unit, and optionally the switch that turns it on.
+- (NSView*)numberControlForKey:(NSString*)key unit:(NSString*)unit switchKey:(NSString*)switchKey
+{
+    NSMutableArray<NSView*>* views = [NSMutableArray arrayWithObject:[self numberFieldForKey:key]];
+    if (unit.length > 0)
+    {
+        NSTextField* unitField = [Theme labelWithFont:[NSFont systemFontOfSize:13] color:Theme.foreground];
+        unitField.stringValue = unit;
+        [views addObject:unitField];
+    }
+    if (switchKey != nil)
+    {
+        [views addObject:[self switchForKey:switchKey action:@selector(switchChanged:)]];
+    }
+    NSStackView* stack = [NSStackView stackViewWithViews:views];
+    stack.spacing = 10;
+    return stack;
+}
+
+- (NSDatePicker*)timePickerForKey:(NSString*)key
+{
+    NSDatePicker* picker = [[NSDatePicker alloc] initWithFrame:NSZeroRect];
+    picker.datePickerStyle = NSDatePickerStyleTextField;
+    picker.datePickerElements = NSDatePickerElementFlagHourMinute;
+    picker.dateValue = [self.fDefaults objectForKey:key] ?: NSDate.date;
+    picker.identifier = key;
+    picker.target = self;
+    picker.action = @selector(timeChanged:);
+    return picker;
+}
+
+- (NSTextField*)headingWithTitle:(NSString*)title
+{
+    NSTextField* heading = [Theme labelWithFont:[Theme displayFontOfSize:17] color:Theme.bright];
+    heading.stringValue = title;
+    return heading;
+}
+
+- (NSView*)speedSection
+{
+    NSPopUpButton* days = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+    NSArray<NSArray*>* choices = @[
+        @[ NSLocalizedString(@"Every day", "Settings"), @(TR_SCHED_ALL) ],
+        @[ NSLocalizedString(@"Weekdays", "Settings"), @(TR_SCHED_WEEKDAY) ],
+        @[ NSLocalizedString(@"Weekends", "Settings"), @(TR_SCHED_WEEKEND) ],
+    ];
+    for (NSArray* choice in choices)
+    {
+        [days addItemWithTitle:choice[0]];
+        days.lastItem.tag = [choice[1] integerValue];
+    }
+    [days selectItemWithTag:[self.fDefaults integerForKey:@"SpeedLimitAutoDay"]];
+    days.target = self;
+    days.action = @selector(dayChanged:);
+
+    NSStackView* schedule = [NSStackView stackViewWithViews:@[ days, [self timePickerForKey:@"SpeedLimitAutoOnDate"], [self timePickerForKey:@"SpeedLimitAutoOffDate"] ]];
+    schedule.spacing = 10;
+
+    NSSwitch* slow = [[NSSwitch alloc] initWithFrame:NSZeroRect];
+    slow.state = [self.fDefaults boolForKey:@"SpeedLimit"] ? NSControlStateValueOn : NSControlStateValueOff;
+    slow.target = self;
+    slow.action = @selector(toggleSlowMode:);
+
+    return [self stackOfRows:@[
+        [self rowWithTitle:NSLocalizedString(@"Limit downloads", "Settings")
+                      hint:NSLocalizedString(@"A ceiling for all transfers together", "Settings")
+                   control:[self numberControlForKey:@"DownloadLimit" unit:@"KB/s" switchKey:@"CheckDownload"]],
+        [self rowWithTitle:NSLocalizedString(@"Limit uploads", "Settings")
+                      hint:NSLocalizedString(@"A ceiling for all transfers together", "Settings")
+                   control:[self numberControlForKey:@"UploadLimit" unit:@"KB/s" switchKey:@"CheckUpload"]],
+        [self rowWithTitle:NSLocalizedString(@"Slow mode", "Settings") hint:NSLocalizedString(@"Overrides the limits above while it's on", "Settings") control:slow],
+        [self rowWithTitle:NSLocalizedString(@"Slow mode downloads", "Settings")
+                      hint:NSLocalizedString(@"Speed while slow mode is on", "Settings")
+                   control:[self numberControlForKey:@"SpeedLimitDownloadLimit" unit:@"KB/s" switchKey:nil]],
+        [self rowWithTitle:NSLocalizedString(@"Slow mode uploads", "Settings")
+                      hint:NSLocalizedString(@"Speed while slow mode is on", "Settings")
+                   control:[self numberControlForKey:@"SpeedLimitUploadLimit" unit:@"KB/s" switchKey:nil]],
+        [self rowWithTitle:NSLocalizedString(@"Run on a schedule", "Settings")
+                      hint:NSLocalizedString(@"Turn slow mode on and off by itself", "Settings")
+                   control:[self switchForKey:@"SpeedLimitAuto" action:@selector(switchChanged:)]],
+        [self rowWithTitle:NSLocalizedString(@"Schedule", "Settings") hint:NSLocalizedString(@"When slow mode runs", "Settings") control:schedule],
+    ]];
 }
 
 - (NSView*)advancedSection
 {
-    self.fAdvancedTabs = [NSSegmentedControl segmentedControlWithLabels:@[
-        NSLocalizedString(@"Queue", "Settings -> advanced"),
-        NSLocalizedString(@"Peers", "Settings -> advanced"),
-        NSLocalizedString(@"Network", "Settings -> advanced"),
-        NSLocalizedString(@"Remote", "Settings -> advanced"),
-        NSLocalizedString(@"Groups", "Settings -> advanced"),
-        NSLocalizedString(@"Alerts", "Settings -> advanced"),
-    ]
-                                                           trackingMode:NSSegmentSwitchTrackingSelectOne
-                                                                 target:self
-                                                                 action:@selector(showAdvancedPane:)];
-    self.fAdvancedTabs.selectedSegment = 0;
-    self.fAdvancedTabs.translatesAutoresizingMaskIntoConstraints = NO;
-
-    NSView* body = [[NSView alloc] initWithFrame:NSZeroRect];
-    self.fPaneHost = [[NSView alloc] initWithFrame:NSZeroRect];
-    self.fPaneHost.translatesAutoresizingMaskIntoConstraints = NO;
-    [body addSubview:self.fAdvancedTabs];
-    [body addSubview:self.fPaneHost];
-
-    [NSLayoutConstraint activateConstraints:@[
-        [self.fAdvancedTabs.leadingAnchor constraintEqualToAnchor:body.leadingAnchor],
-        [self.fAdvancedTabs.topAnchor constraintEqualToAnchor:body.topAnchor],
-        [self.fPaneHost.leadingAnchor constraintEqualToAnchor:body.leadingAnchor],
-        [self.fPaneHost.trailingAnchor constraintEqualToAnchor:body.trailingAnchor],
-        [self.fPaneHost.topAnchor constraintEqualToAnchor:self.fAdvancedTabs.bottomAnchor constant:12],
-        [self.fPaneHost.bottomAnchor constraintEqualToAnchor:body.bottomAnchor],
+    NSPopUpButton* encryption = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+    [encryption addItemsWithTitles:@[
+        NSLocalizedString(@"Allow", "Settings -> encryption"),
+        NSLocalizedString(@"Prefer", "Settings -> encryption"),
+        NSLocalizedString(@"Require", "Settings -> encryption"),
     ]];
-    [self showAdvancedPane:nil];
-    return body;
-}
+    [encryption selectItemAtIndex:[self.fDefaults boolForKey:@"EncryptionPrefer"] ? ([self.fDefaults boolForKey:@"EncryptionRequire"] ? 2 : 1) : 0];
+    encryption.target = self;
+    encryption.action = @selector(encryptionChanged:);
 
-- (void)showAdvancedPane:(id)sender
-{
-    NSArray<NSString*>* panes = @[ @"Transfers", @"Peers", @"Network", @"Remote", @"Groups", @"General" ];
-    for (NSView* view in self.fPaneHost.subviews.copy)
+    NSSwitch* (^toggle)(NSString*) = ^(NSString* key) {
+        return [self switchForKey:key action:@selector(switchChanged:)];
+    };
+
+    NSStackView* stack = [self stackOfRows:@[
+        [self headingWithTitle:NSLocalizedString(@"Queue", "Settings -> advanced")],
+        [self rowWithTitle:NSLocalizedString(@"Downloads at once", "Settings")
+                      hint:NSLocalizedString(@"Others wait their turn", "Settings")
+                   control:[self numberControlForKey:@"QueueDownloadNumber" unit:@"" switchKey:@"Queue"]],
+        [self rowWithTitle:NSLocalizedString(@"Seeding at once", "Settings")
+                      hint:NSLocalizedString(@"Others wait their turn", "Settings")
+                   control:[self numberControlForKey:@"QueueSeedNumber" unit:@"" switchKey:@"QueueSeed"]],
+        [self rowWithTitle:NSLocalizedString(@"Skip stalled transfers", "Settings")
+                      hint:NSLocalizedString(@"Stop counting a transfer that has gone quiet", "Settings")
+                   control:[self numberControlForKey:@"StalledMinutes" unit:NSLocalizedString(@"min", "Settings") switchKey:@"CheckStalled"]],
+        [self headingWithTitle:NSLocalizedString(@"Peers", "Settings -> advanced")],
+        [self rowWithTitle:NSLocalizedString(@"Most peers overall", "Settings") hint:NSLocalizedString(@"Across all transfers", "Settings") control:[self numberFieldForKey:@"PeersTotal"]],
+        [self rowWithTitle:NSLocalizedString(@"Most peers per transfer", "Settings") hint:NSLocalizedString(@"For each transfer", "Settings") control:[self numberFieldForKey:@"PeersTorrent"]],
+        [self rowWithTitle:NSLocalizedString(@"Encryption", "Settings") hint:NSLocalizedString(@"Require can mean fewer peers", "Settings") control:encryption],
+        [self rowWithTitle:NSLocalizedString(@"DHT", "Settings") hint:NSLocalizedString(@"Find peers without a tracker", "Settings") control:toggle(@"DHTGlobal")],
+        [self rowWithTitle:NSLocalizedString(@"Peer exchange", "Settings") hint:NSLocalizedString(@"Let peers introduce each other", "Settings") control:toggle(@"PEXGlobal")],
+        [self rowWithTitle:NSLocalizedString(@"Local peers", "Settings") hint:NSLocalizedString(@"Find peers on this network", "Settings") control:toggle(@"LocalPeerDiscoveryGlobal")],
+        [self rowWithTitle:NSLocalizedString(@"µTP", "Settings") hint:NSLocalizedString(@"A gentler transfer protocol", "Settings") control:toggle(@"UTPGlobal")],
+        [self headingWithTitle:NSLocalizedString(@"Connection", "Settings -> advanced")],
+        [self rowWithTitle:NSLocalizedString(@"Port", "Settings") hint:NSLocalizedString(@"For incoming connections", "Settings") control:[self numberFieldForKey:@"BindPort"]],
+        [self rowWithTitle:NSLocalizedString(@"New port each launch", "Settings") hint:NSLocalizedString(@"Pick a random port on start", "Settings") control:toggle(@"RandomPort")],
+        [self rowWithTitle:NSLocalizedString(@"Map the port automatically", "Settings") hint:NSLocalizedString(@"Ask the router with UPnP or NAT-PMP", "Settings") control:toggle(@"NatTraversal")],
+        [self headingWithTitle:NSLocalizedString(@"Dock", "Settings -> advanced")],
+        [self rowWithTitle:NSLocalizedString(@"Show download speed", "Settings") hint:NSLocalizedString(@"On the Dock icon", "Settings") control:toggle(@"BadgeDownloadRate")],
+        [self rowWithTitle:NSLocalizedString(@"Show upload speed", "Settings") hint:NSLocalizedString(@"On the Dock icon", "Settings") control:toggle(@"BadgeUploadRate")],
+    ]];
+    NSArray<NSView*>* rows = stack.arrangedSubviews;
+    for (NSUInteger index = 0; index < rows.count; ++index)
     {
-        [view removeFromSuperview];
+        if ([rows[index] isKindOfClass:NSTextField.class])
+        {
+            [stack setCustomSpacing:8 afterView:rows[index]];
+            if (index > 0)
+            {
+                [stack setCustomSpacing:26 afterView:rows[index - 1]];
+            }
+        }
     }
+    stack.translatesAutoresizingMaskIntoConstraints = NO;
 
-    NSView* host = [self embeddedPane:panes[self.fAdvancedTabs.selectedSegment]];
-    host.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.fPaneHost addSubview:host];
+    NSView* document = [[NSView alloc] initWithFrame:NSZeroRect];
+    document.translatesAutoresizingMaskIntoConstraints = NO;
+    [document addSubview:stack];
+
+    NSClipView* clip = [[NSClipView alloc] initWithFrame:NSZeroRect];
+    clip.drawsBackground = NO;
+    NSScrollView* scroll = [[NSScrollView alloc] initWithFrame:NSZeroRect];
+    scroll.contentView = clip;
+    scroll.documentView = document;
+    scroll.drawsBackground = NO;
+    scroll.hasVerticalScroller = YES;
+    scroll.autohidesScrollers = YES;
+    scroll.automaticallyAdjustsContentInsets = NO;
+
     [NSLayoutConstraint activateConstraints:@[
-        [host.leadingAnchor constraintEqualToAnchor:self.fPaneHost.leadingAnchor],
-        [host.topAnchor constraintEqualToAnchor:self.fPaneHost.topAnchor],
-        [host.widthAnchor constraintEqualToConstant:NSWidth(host.frame)],
-        [self.fPaneHost.heightAnchor constraintEqualToConstant:NSHeight(host.frame)],
+        [scroll.heightAnchor constraintEqualToConstant:500],
+        [document.leadingAnchor constraintEqualToAnchor:clip.leadingAnchor],
+        [document.trailingAnchor constraintEqualToAnchor:clip.trailingAnchor],
+        [document.topAnchor constraintEqualToAnchor:clip.topAnchor],
+        [stack.leadingAnchor constraintEqualToAnchor:document.leadingAnchor],
+        [stack.trailingAnchor constraintEqualToAnchor:document.trailingAnchor constant:-16],
+        [stack.topAnchor constraintEqualToAnchor:document.topAnchor],
+        [stack.bottomAnchor constraintEqualToAnchor:document.bottomAnchor],
     ]];
+    return scroll;
 }
 
 #pragma mark - Actions
@@ -431,6 +573,42 @@ typedef NS_ENUM(NSInteger, SettingsSection) {
 - (void)setAppearance:(NSSegmentedControl*)sender
 {
     Theme.mode = static_cast<ThemeMode>(sender.selectedSegment);
+}
+
+- (void)switchChanged:(NSSwitch*)sender
+{
+    [self.fDefaults setBool:sender.state == NSControlStateValueOn forKey:sender.identifier];
+    [self.fPrefs applyChangeToKey:sender.identifier];
+}
+
+- (void)numberChanged:(NSTextField*)sender
+{
+    [self.fDefaults setInteger:sender.integerValue forKey:sender.identifier];
+    [self.fPrefs applyChangeToKey:sender.identifier];
+}
+
+- (void)timeChanged:(NSDatePicker*)sender
+{
+    [self.fDefaults setObject:sender.dateValue forKey:sender.identifier];
+    [self.fPrefs applyChangeToKey:sender.identifier];
+}
+
+- (void)dayChanged:(NSPopUpButton*)sender
+{
+    [self.fDefaults setInteger:sender.selectedTag forKey:@"SpeedLimitAutoDay"];
+    [self.fPrefs applyChangeToKey:@"SpeedLimitAutoDay"];
+}
+
+- (void)encryptionChanged:(NSPopUpButton*)sender
+{
+    [self.fDefaults setBool:sender.indexOfSelectedItem > 0 forKey:@"EncryptionPrefer"];
+    [self.fDefaults setBool:sender.indexOfSelectedItem == 2 forKey:@"EncryptionRequire"];
+    [self.fPrefs applyChangeToKey:@"EncryptionPrefer"];
+}
+
+- (void)toggleSlowMode:(id)sender
+{
+    [(Controller*)NSApp.delegate toggleSpeedLimit:sender];
 }
 
 - (void)toggleSetting:(NSSwitch*)sender

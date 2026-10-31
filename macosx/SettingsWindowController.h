@@ -8,8 +8,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// Settings with a glass sidebar. Everyday options are built here; PrefsController
-/// still owns session changes, and its panes live on under Speed and Advanced.
+/// Settings with a glass sidebar. The rows are built here; PrefsController still
+/// passes each change on to the session.
 @interface SettingsWindowController : NSWindowController
 
 - (instancetype)initWithPrefs:(PrefsController*)prefs;

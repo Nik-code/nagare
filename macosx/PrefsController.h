@@ -18,8 +18,8 @@
 
 - (void)rpcUpdatePrefs;
 
-/// One of the classic panes: General, Transfers, Groups, Bandwidth, Peers, Network or Remote.
-- (NSView*)paneNamed:(NSString*)name;
+/// Passes a changed default on to the session.
+- (void)applyChangeToKey:(NSString*)key;
 
 - (void)chooseDownloadFolderInWindow:(NSWindow*)window completion:(void (^)(void))completion;
 - (void)applyRatioSetting:(id)sender;

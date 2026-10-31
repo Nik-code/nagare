@@ -926,19 +926,98 @@ static NSString* const kWebUIURLFormat = @"http://localhost:%ld/";
     tr_sessionSetCompleteVerifyEnabled(self.fHandle, enabled);
 }
 
-- (NSView*)paneNamed:(NSString*)name
+- (void)applyChangeToKey:(NSString*)key
 {
-    [self window]; // loads the nib
-    NSDictionary<NSString*, NSView*>* panes = @{
-        @"General" : self.fGeneralView,
-        @"Transfers" : self.fTransfersView,
-        @"Groups" : self.fGroupsView,
-        @"Bandwidth" : self.fBandwidthView,
-        @"Peers" : self.fPeersView,
-        @"Network" : self.fNetworkView,
-        @"Remote" : self.fRemoteView,
-    };
-    return panes[name];
+    NSUserDefaults* defaults = self.fDefaults;
+    NSInteger const number = [defaults integerForKey:key];
+
+    if ([@[ @"CheckDownload", @"CheckUpload", @"DownloadLimit", @"UploadLimit" ] containsObject:key])
+    {
+        [self applySpeedSettings:nil];
+    }
+    else if ([@[ @"SpeedLimitDownloadLimit", @"SpeedLimitUploadLimit" ] containsObject:key])
+    {
+        [self applyAltSpeedSettings];
+    }
+    else if ([key isEqualToString:@"SpeedLimitAuto"])
+    {
+        [self setAutoSpeedLimit:nil];
+    }
+    else if ([@[ @"SpeedLimitAutoOnDate", @"SpeedLimitAutoOffDate" ] containsObject:key])
+    {
+        [self setAutoSpeedLimitTime:nil];
+    }
+    else if ([key isEqualToString:@"SpeedLimitAutoDay"])
+    {
+        tr_sessionSetAltSpeedDay(self.fHandle, static_cast<tr_sched_day>(number));
+    }
+    else if ([@[ @"Queue", @"QueueSeed" ] containsObject:key])
+    {
+        [self setQueue:nil];
+    }
+    else if ([key isEqualToString:@"QueueDownloadNumber"])
+    {
+        tr_sessionSetQueueSize(self.fHandle, TR_DOWN, number);
+    }
+    else if ([key isEqualToString:@"QueueSeedNumber"])
+    {
+        tr_sessionSetQueueSize(self.fHandle, TR_UP, number);
+    }
+    else if ([key isEqualToString:@"CheckStalled"])
+    {
+        [self setStalled:nil];
+    }
+    else if ([key isEqualToString:@"StalledMinutes"])
+    {
+        tr_sessionSetQueueStalledMinutes(self.fHandle, number);
+        [NSNotificationCenter.defaultCenter postNotificationName:@"UpdateUI" object:self];
+    }
+    else if ([key isEqualToString:@"PeersTotal"])
+    {
+        tr_sessionSetPeerLimit(self.fHandle, number);
+    }
+    else if ([key isEqualToString:@"PeersTorrent"])
+    {
+        tr_sessionSetPeerLimitPerTorrent(self.fHandle, number);
+    }
+    else if ([key isEqualToString:@"PEXGlobal"])
+    {
+        [self setPEX:nil];
+    }
+    else if ([key isEqualToString:@"DHTGlobal"])
+    {
+        [self setDHT:nil];
+    }
+    else if ([key isEqualToString:@"LocalPeerDiscoveryGlobal"])
+    {
+        [self setLPD:nil];
+    }
+    else if ([key isEqualToString:@"UTPGlobal"])
+    {
+        [self setUTP:nil];
+    }
+    else if ([@[ @"EncryptionPrefer", @"EncryptionRequire" ] containsObject:key])
+    {
+        [self setEncryptionMode:nil];
+    }
+    else if ([key isEqualToString:@"BindPort"])
+    {
+        tr_sessionSetPeerPort(self.fHandle, static_cast<uint16_t>(number));
+        self.fPeerPort = -1;
+    }
+    else if ([key isEqualToString:@"RandomPort"])
+    {
+        tr_sessionSetPeerPortRandomOnStart(self.fHandle, [defaults boolForKey:key]);
+    }
+    else if ([key isEqualToString:@"NatTraversal"])
+    {
+        tr_sessionSetPortForwardingEnabled(self.fHandle, [defaults boolForKey:key]);
+        self.fNatStatus = -1;
+    }
+    else if ([@[ @"BadgeDownloadRate", @"BadgeUploadRate" ] containsObject:key])
+    {
+        [self setBadge:nil];
+    }
 }
 
 - (void)chooseDownloadFolderInWindow:(NSWindow*)window completion:(void (^)(void))completion
