@@ -114,6 +114,8 @@ extern NSString* const kTorrentDidChangeGroupNotification;
 - (NSString*)fileLocation:(FileListNode*)node;
 
 - (void)renameTorrent:(NSString*)newName completionHandler:(void (^)(BOOL didRename))completionHandler;
+/// A magnet can't be renamed until its metadata arrives, so the name waits here.
+@property(nonatomic, copy) NSString* pendingName;
 - (void)renameFileNode:(FileListNode*)node
               withName:(NSString*)newName
      completionHandler:(void (^)(BOOL didRename))completionHandler;
@@ -169,6 +171,9 @@ extern NSString* const kTorrentDidChangeGroupNotification;
 @property(nonatomic, readonly) NSUInteger totalKnownPeersLTEP;
 
 @property(nonatomic, readonly) NSUInteger peersSendingToUs;
+/// The most seeders and leechers any tracker reports, or -1 if none has said.
+@property(nonatomic, readonly) NSInteger swarmSeeders;
+@property(nonatomic, readonly) NSInteger swarmLeechers;
 @property(nonatomic, readonly) NSUInteger peersGettingFromUs;
 
 @property(nonatomic, readonly) CGFloat downloadRate;

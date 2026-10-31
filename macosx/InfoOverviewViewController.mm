@@ -8,7 +8,8 @@
 #import "Theme.h"
 #import "Torrent.h"
 
-static CGFloat const kViewHeight = 372.0;
+static CGFloat const kViewHeight = 480.0;
+static CGFloat const kDropletsHeight = 236.0;
 
 @interface InfoOverviewViewController ()
 @property(nonatomic, copy) NSArray<Torrent*>* fTorrents;
@@ -30,17 +31,6 @@ static CGFloat const kViewHeight = 372.0;
     return self;
 }
 
-- (NSView*)statWithTitle:(NSString*)title value:(NSTextField*)value
-{
-    NSTextField* label = [Theme labelWithFont:[NSFont systemFontOfSize:12] color:Theme.foreground];
-    label.stringValue = title;
-    NSStackView* stack = [NSStackView stackViewWithViews:@[ label, value ]];
-    stack.orientation = NSUserInterfaceLayoutOrientationVertical;
-    stack.alignment = NSLayoutAttributeLeading;
-    stack.spacing = 2;
-    return stack;
-}
-
 - (NSView*)factWithTitle:(NSString*)title value:(NSTextField*)value
 {
     NSTextField* label = [Theme labelWithFont:[NSFont systemFontOfSize:13] color:Theme.foreground];
@@ -58,8 +48,8 @@ static CGFloat const kViewHeight = 372.0;
     NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 520, kViewHeight)];
     view.translatesAutoresizingMaskIntoConstraints = NO;
 
-    self.fDropletView = [[DropletView alloc] initWithFrame:NSMakeRect(0, 0, 480, 178)];
-    self.fDropletView.dotRows = 15;
+    self.fDropletView = [[DropletView alloc] initWithFrame:NSMakeRect(0, 0, 500, kDropletsHeight)];
+    self.fDropletView.dotRows = 20;
     self.fDropletView.tracksNewPieces = NO;
     self.fDropletView.translatesAutoresizingMaskIntoConstraints = NO;
     [view addSubview:self.fDropletView];
@@ -68,15 +58,16 @@ static CGFloat const kViewHeight = 372.0;
     NSMutableArray<NSView*>* stats = [NSMutableArray array];
     NSArray<NSString*>* titles = @[
         NSLocalizedString(@"Have", "Overview -> stat"),
+        NSLocalizedString(@"Seeds", "Overview -> stat"),
         NSLocalizedString(@"Peers", "Overview -> stat"),
         NSLocalizedString(@"Down", "Overview -> stat"),
         NSLocalizedString(@"Up", "Overview -> stat"),
     ];
     for (NSString* title in titles)
     {
-        NSTextField* value = [Theme labelWithFont:[Theme displayFontOfSize:20] color:Theme.bright];
+        NSTextField* value = [Theme labelWithFont:[Theme displayFontOfSize:19] color:Theme.bright];
         [values addObject:value];
-        [stats addObject:[self statWithTitle:title value:value]];
+        [stats addObject:[Theme statWithTitle:title value:value]];
     }
     self.fStatValues = values;
 
@@ -103,13 +94,13 @@ static CGFloat const kViewHeight = 372.0;
         [self.fDropletView.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:20],
         [self.fDropletView.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:-20],
         [self.fDropletView.topAnchor constraintEqualToAnchor:view.topAnchor constant:14],
-        [self.fDropletView.heightAnchor constraintEqualToConstant:178],
+        [self.fDropletView.heightAnchor constraintEqualToConstant:kDropletsHeight],
         [row.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:20],
         [row.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:-20],
-        [row.topAnchor constraintEqualToAnchor:self.fDropletView.bottomAnchor constant:16],
+        [row.topAnchor constraintEqualToAnchor:self.fDropletView.bottomAnchor constant:20],
         [facts.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:20],
         [facts.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:-20],
-        [facts.topAnchor constraintEqualToAnchor:row.bottomAnchor constant:18],
+        [facts.topAnchor constraintEqualToAnchor:row.bottomAnchor constant:22],
     ]];
 
     self.view = view;
@@ -137,26 +128,37 @@ static CGFloat const kViewHeight = 372.0;
     }
 
     uint64_t have = 0;
-    NSUInteger peers = 0;
+    NSUInteger connected = 0;
+    NSInteger seeds = -1;
+    NSInteger peers = -1;
     CGFloat down = 0.0;
     CGFloat up = 0.0;
     for (Torrent* torrent in torrents)
     {
         have += torrent.haveTotal;
-        peers += torrent.totalPeersConnected;
+        connected += torrent.totalPeersConnected;
+        if (torrent.swarmSeeders >= 0)
+        {
+            seeds = MAX(seeds, 0) + torrent.swarmSeeders;
+        }
+        if (torrent.swarmLeechers >= 0)
+        {
+            peers = MAX(peers, 0) + torrent.swarmLeechers;
+        }
         down += torrent.downloadRate;
         up += torrent.uploadRate;
     }
 
     self.fStatValues[0].stringValue = [NSString stringForFileSize:have];
-    self.fStatValues[1].stringValue = [NSString stringWithFormat:@"%lu", peers];
-    self.fStatValues[2].stringValue = [NSString stringForSpeed:down];
-    self.fStatValues[3].stringValue = [NSString stringForSpeed:up];
+    self.fStatValues[1].stringValue = seeds >= 0 ? [NSString stringWithFormat:@"%ld", seeds] : @"?";
+    self.fStatValues[2].stringValue = peers >= 0 ? [NSString stringWithFormat:@"%ld", peers] : [NSString stringWithFormat:@"%lu", connected];
+    self.fStatValues[3].stringValue = [NSString stringForSpeed:down];
+    self.fStatValues[4].stringValue = [NSString stringForSpeed:up];
 
     [self.fDropletView updateWithTorrent:only];
     self.fDropletView.hidden = only == nil;
 
-    self.fLocationField.stringValue = only.dataLocation.stringByAbbreviatingWithTildeInPath ?: @"";
+    self.fLocationField.stringValue = (only.dataLocation ?: only.currentDirectory).stringByAbbreviatingWithTildeInPath ?: @"";
     self.fPiecesField.stringValue = only != nil ? [NSString stringWithFormat:@"%ld × %@", only.pieceCount, [NSString stringForFileSize:only.pieceSize]] : @"";
     self.fHashField.stringValue = only.hashString ?: @"";
 }

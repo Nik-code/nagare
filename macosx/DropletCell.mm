@@ -15,6 +15,8 @@
 @property(nonatomic) NSTextField* fStateField;
 @property(nonatomic) NSTextField* fDetailField;
 @property(nonatomic) NSTextField* fSpeedField;
+@property(nonatomic) NSTextField* fSwarmField;
+@property(nonatomic) NSStackView* fRates;
 @property(nonatomic) NSButton* fControlButton;
 @property(nonatomic) NSButton* fRemoveButton;
 @property(nonatomic) NSTrackingArea* fTrackingArea;
@@ -47,7 +49,15 @@
 
         _fSpeedField = [Theme labelWithFont:[NSFont monospacedDigitSystemFontOfSize:14 weight:NSFontWeightRegular] color:Theme.bright];
         _fSpeedField.alignment = NSTextAlignmentRight;
-        [self addSubview:_fSpeedField];
+        _fSwarmField = [Theme labelWithFont:[NSFont monospacedDigitSystemFontOfSize:12 weight:NSFontWeightRegular] color:Theme.foreground];
+        _fSwarmField.alignment = NSTextAlignmentRight;
+
+        _fRates = [NSStackView stackViewWithViews:@[ _fSpeedField, _fSwarmField ]];
+        _fRates.orientation = NSUserInterfaceLayoutOrientationVertical;
+        _fRates.alignment = NSLayoutAttributeTrailing;
+        _fRates.spacing = 3;
+        _fRates.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:_fRates];
 
         _fControlButton = [Theme iconButton:@"Pause" target:self action:@selector(toggleControl:)];
         _fControlButton.contentTintColor = Theme.bright;
@@ -67,13 +77,13 @@
             [_fDetailField.widthAnchor constraintEqualToAnchor:text.widthAnchor],
 
             [_dropletView.leadingAnchor constraintEqualToAnchor:text.trailingAnchor constant:22],
-            [_dropletView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-136],
+            [_dropletView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-176],
             [_dropletView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
             [_dropletView.heightAnchor constraintEqualToConstant:68],
 
-            [_fSpeedField.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-24],
-            [_fSpeedField.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
-            [_fSpeedField.leadingAnchor constraintEqualToAnchor:_dropletView.trailingAnchor constant:8],
+            [_fRates.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-24],
+            [_fRates.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+            [_fRates.leadingAnchor constraintGreaterThanOrEqualToAnchor:_dropletView.trailingAnchor constant:8],
 
             [_fRemoveButton.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-24],
             [_fRemoveButton.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
@@ -102,6 +112,32 @@
         return formatter;
     }();
     return [NSString stringWithFormat:NSLocalizedString(@"%@ left", "Torrent row detail"), [sFormatter stringFromTimeInterval:eta]];
+}
+
++ (NSString*)shortCount:(NSInteger)count
+{
+    return count < 1000 ? [NSString stringWithFormat:@"%ld", count] : [NSString stringWithFormat:@"%.1fk", count / 1000.0];
+}
+
++ (NSString*)swarmText:(Torrent*)torrent
+{
+    if (torrent.magnet || torrent.error)
+    {
+        return @"";
+    }
+
+    NSInteger const seeds = torrent.swarmSeeders;
+    NSInteger const peers = torrent.swarmLeechers;
+    if (seeds >= 0 || peers >= 0)
+    {
+        return [NSString stringWithFormat:NSLocalizedString(@"%@ seeds  ·  %@ peers", "Torrent row swarm"),
+                                          [self shortCount:MAX(seeds, 0)],
+                                          [self shortCount:MAX(peers, 0)]];
+    }
+
+    // No tracker has reported, so all we can say is who we're talking to.
+    NSUInteger const connected = torrent.totalPeersConnected;
+    return connected > 0 ? [NSString stringWithFormat:NSLocalizedString(@"%lu connected", "Torrent row swarm"), connected] : @"";
 }
 
 - (void)configureWithTorrent:(Torrent*)torrent table:(TorrentTableView*)table
@@ -199,6 +235,9 @@
     self.fStateField.attributedStringValue = line;
     self.fDetailField.stringValue = detail ?: @"";
     self.fSpeedField.stringValue = speed;
+    self.fSpeedField.hidden = speed.length == 0;
+    self.fSwarmField.stringValue = [DropletCell swarmText:torrent];
+    self.fSwarmField.hidden = self.fSwarmField.stringValue.length == 0;
 
     BOOL const running = torrent.active || torrent.waitingToStart;
     self.fControlButton.image = [Theme icon:running ? @"Pause" : @"Play"];
@@ -212,7 +251,7 @@
 {
     self.fControlButton.hidden = !self.fHovering;
     self.fRemoveButton.hidden = !self.fHovering;
-    self.fSpeedField.hidden = self.fHovering;
+    self.fRates.hidden = self.fHovering;
 }
 
 - (void)updateTrackingAreas

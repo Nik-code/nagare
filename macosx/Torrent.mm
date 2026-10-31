@@ -868,6 +868,26 @@ static bool trashDataFile(char const* filename, void* /*user_data*/, tr_error* e
     tr_torrentRenamePath(self.fHandle, oldPath.UTF8String, newName.UTF8String, renameCallback, (__bridge_retained void*)(contextInfo));
 }
 
+- (NSInteger)swarmSeeders
+{
+    NSInteger most = -1;
+    for (size_t i = 0, n = tr_torrentTrackerCount(self.fHandle); i < n; ++i)
+    {
+        most = MAX(most, static_cast<NSInteger>(tr_torrentTracker(self.fHandle, i).seederCount));
+    }
+    return most;
+}
+
+- (NSInteger)swarmLeechers
+{
+    NSInteger most = -1;
+    for (size_t i = 0, n = tr_torrentTrackerCount(self.fHandle); i < n; ++i)
+    {
+        most = MAX(most, static_cast<NSInteger>(tr_torrentTracker(self.fHandle, i).leecherCount));
+    }
+    return most;
+}
+
 - (time_t)eta
 {
     time_t eta = self.fStat->eta;
@@ -2078,6 +2098,18 @@ static bool trashDataFile(char const* filename, void* /*user_data*/, tr_error* e
     self.fStat = tr_torrentStat(self.fHandle);
 
     [self createFileList];
+
+    if (self.pendingName != nil)
+    {
+        NSString* name = self.pendingName;
+        self.pendingName = nil;
+        [self renameTorrent:name completionHandler:^(BOOL didRename) {
+            if (didRename)
+            {
+                [NSNotificationCenter.defaultCenter postNotificationName:@"UpdateTorrentsState" object:nil];
+            }
+        }];
+    }
 
     /* If the torrent is in no group, or the group was automatically determined based on criteria evaluated
      * before we had metadata for this torrent, redetermine the group
