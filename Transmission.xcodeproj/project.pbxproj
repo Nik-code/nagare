@@ -94,6 +94,7 @@
 		9088D12412F920860ADAFD31 /* SearchWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 55C8D8347EE0546A4CC13081 /* SearchWindowController.mm */; };
 		25F87BAC1D8A4092FDE06E38 /* InfoOverviewViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9823DC4E5AB070D5B2E3B5E9 /* InfoOverviewViewController.mm */; };
 		83276BD87E1A931C19C0EECF /* SettingsWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 86C30126F39941B2B7F6E238 /* SettingsWindowController.mm */; };
+		96DEEF16EA78C7A0DA0A83CC /* QBittorrentImporter.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2BC21EBD2C25C80A2D0BDEC2 /* QBittorrentImporter.mm */; };
 		A2085DDC0C53BC74000BC3B7 /* AboutWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */; };
 		A209EAC61142CF28002B02D1 /* InfoActivityViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A209EAC31142CF28002B02D1 /* InfoActivityViewController.mm */; };
 		A209EAC71142CF28002B02D1 /* InfoGeneralViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A209EAC51142CF28002B02D1 /* InfoGeneralViewController.mm */; };
@@ -863,6 +864,8 @@
 		9823DC4E5AB070D5B2E3B5E9 /* InfoOverviewViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = InfoOverviewViewController.mm; sourceTree = "<group>"; };
 		7E78546BA8D9B5FFA70C62CB /* SettingsWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsWindowController.h; sourceTree = "<group>"; };
 		86C30126F39941B2B7F6E238 /* SettingsWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SettingsWindowController.mm; sourceTree = "<group>"; };
+		8FD55BB5FFC5F572C00877F2 /* QBittorrentImporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QBittorrentImporter.h; sourceTree = "<group>"; };
+		2BC21EBD2C25C80A2D0BDEC2 /* QBittorrentImporter.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = QBittorrentImporter.mm; sourceTree = "<group>"; };
 		A2085DD90C53BC74000BC3B7 /* AboutWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AboutWindowController.h; sourceTree = "<group>"; };
 		A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AboutWindowController.mm; sourceTree = "<group>"; };
 		A209EAC21142CF28002B02D1 /* InfoActivityViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoActivityViewController.h; sourceTree = "<group>"; };
@@ -1706,6 +1709,8 @@
 				9823DC4E5AB070D5B2E3B5E9 /* InfoOverviewViewController.mm */,
 				7E78546BA8D9B5FFA70C62CB /* SettingsWindowController.h */,
 				86C30126F39941B2B7F6E238 /* SettingsWindowController.mm */,
+				8FD55BB5FFC5F572C00877F2 /* QBittorrentImporter.h */,
+				2BC21EBD2C25C80A2D0BDEC2 /* QBittorrentImporter.mm */,
 				A2085DD90C53BC74000BC3B7 /* AboutWindowController.h */,
 				A2085DDA0C53BC74000BC3B7 /* AboutWindowController.mm */,
 				A2F7CF5D13035FFD0016FF10 /* URLSheetWindowController.h */,
@@ -3460,6 +3465,7 @@
 				9088D12412F920860ADAFD31 /* SearchWindowController.mm in Sources */,
 				25F87BAC1D8A4092FDE06E38 /* InfoOverviewViewController.mm in Sources */,
 				83276BD87E1A931C19C0EECF /* SettingsWindowController.mm in Sources */,
+				96DEEF16EA78C7A0DA0A83CC /* QBittorrentImporter.mm in Sources */,
 				A2085DDC0C53BC74000BC3B7 /* AboutWindowController.mm in Sources */,
 				A257C1820CAD3003004E121C /* PeerTableView.mm in Sources */,
 				A2A6321B0CD9751700E3DA60 /* BadgeView.mm in Sources */,

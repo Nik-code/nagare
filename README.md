@@ -5,6 +5,7 @@ Nagare (流れ, "flow") is a personal macOS torrent client built on [Transmissio
 - **Swell header:** the water is a graph. The blue swell is the last ten minutes of download speed and the sand in front of it is upload.
 - **Droplet rows:** each dot is a share of the file. While seeding, the dots become a tide that rises with your share ratio and moves only during upload.
 - **Search:** sources are JSON files, so they are data and nothing in them is ever run. Internet Archive is built in, and more go in `~/Library/Application Support/Nagare/Search Sources`.
+- **qBittorrent import:** on first launch Nagare reads qBittorrent's records, adds its torrents paused and checks the files where they already are. qBittorrent itself is only read, never changed. Run it again from the File menu.
 - **Native:** Liquid Glass, Tabler icons, Outfit, with light paper and dark warm grey themes.
 
 Nagare has no auto-updater, so it never replaces itself with anything else.

@@ -39,6 +39,7 @@
 #import "GroupToolbarItem.h"
 #import "ShareToolbarItem.h"
 #import "ShareTorrentFileHelper.h"
+#import "QBittorrentImporter.h"
 #import "SearchWindowController.h"
 #import "SettingsWindowController.h"
 #import "SwellHeaderView.h"
@@ -666,9 +667,9 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     [content addSubview:self.fEmptyField];
 
     [NSLayoutConstraint activateConstraints:@[
-        [self.fHeaderView.leadingAnchor constraintEqualToAnchor:content.leadingAnchor constant:8],
-        [self.fHeaderView.trailingAnchor constraintEqualToAnchor:content.trailingAnchor constant:-8],
-        [self.fHeaderView.topAnchor constraintEqualToAnchor:content.topAnchor constant:8],
+        [self.fHeaderView.leadingAnchor constraintEqualToAnchor:content.leadingAnchor constant:12],
+        [self.fHeaderView.trailingAnchor constraintEqualToAnchor:content.trailingAnchor constant:-12],
+        [self.fHeaderView.topAnchor constraintEqualToAnchor:content.topAnchor constant:12],
         [self.fHeaderView.heightAnchor constraintEqualToConstant:254],
         [filters.leadingAnchor constraintEqualToAnchor:content.leadingAnchor constant:24],
         [filters.trailingAnchor constraintEqualToAnchor:content.trailingAnchor constant:-24],
@@ -728,9 +729,69 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
             NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search…", "File menu -> search") action:@selector(showSearchWindow:) keyEquivalent:@"k"];
             item.target = self;
             [top.submenu insertItem:item atIndex:index + 1];
+
+            NSMenuItem* import = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Import from qBittorrent…", "File menu -> import")
+                                                            action:@selector(importFromQBittorrent:)
+                                                     keyEquivalent:@""];
+            import.target = self;
+            [top.submenu insertItem:import atIndex:index + 2];
             break;
         }
     }
+}
+
+- (NSUInteger)addQBittorrentTransfers
+{
+    NSUInteger added = 0;
+    NSFileManager* manager = NSFileManager.defaultManager;
+    for (QBittorrentEntry* entry in QBittorrentImporter.entries)
+    {
+        auto metainfo = tr_torrent_metainfo{};
+        if (!metainfo.parse_torrent_file(entry.torrentPath.UTF8String) || tr_torrentFindFromMetainfo(self.fLib, &metainfo) != nullptr)
+        {
+            continue;
+        }
+
+        // Adding can tidy away the source file, so it only ever sees a copy of qBittorrent's.
+        NSString* copy = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
+        if (![manager copyItemAtPath:entry.torrentPath toPath:copy error:nil])
+        {
+            continue;
+        }
+
+        Torrent* torrent = [[Torrent alloc] initWithPath:copy location:entry.savePath deleteTorrentFile:NO lib:self.fLib];
+        [manager removeItemAtPath:copy error:nil];
+        if (torrent == nil)
+        {
+            continue;
+        }
+
+        // Stays paused and checks the files that are already there, so nothing downloads again.
+        [torrent update];
+        [self.fTorrents addObject:torrent];
+        if (!self.fAddingTransfers)
+        {
+            self.fAddingTransfers = [[NSMutableSet alloc] init];
+        }
+        [self.fAddingTransfers addObject:torrent];
+        [torrent resetCache];
+        ++added;
+    }
+
+    [self.fDefaults setBool:YES forKey:@"QBittorrentImported"];
+    [self fullUpdateUI];
+    return added;
+}
+
+- (void)importFromQBittorrent:(id)sender
+{
+    NSUInteger const added = [self addQBittorrentTransfers];
+
+    NSAlert* alert = [[NSAlert alloc] init];
+    alert.messageText = added > 0 ? [NSString stringWithFormat:NSLocalizedString(@"Added %lu transfers from qBittorrent", "Import alert"), added] :
+                                    NSLocalizedString(@"Nothing new in qBittorrent", "Import alert");
+    alert.informativeText = NSLocalizedString(@"They're paused while their files are checked. qBittorrent itself wasn't changed.", "Import alert");
+    [alert runModal];
 }
 
 - (void)showSearchWindow:(id)sender
@@ -986,6 +1047,11 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 {
     [Theme addThemeMenu];
     [self simplifyMenus];
+
+    if (![self.fDefaults boolForKey:@"QBittorrentImported"])
+    {
+        [self addQBittorrentTransfers];
+    }
 
     //cover our asses
     if ([NSUserDefaults.standardUserDefaults boolForKey:@"WarningLegal"])
@@ -4648,7 +4714,7 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
 - (NSArray*)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
-    return @[ NSToolbarFlexibleSpaceItemIdentifier, ToolbarItemIdentifierSearch, ToolbarItemIdentifierAddLink, ToolbarItemIdentifierDetails ];
+    return @[ NSToolbarFlexibleSpaceItemIdentifier, ToolbarItemIdentifierSearch, ToolbarItemIdentifierAddLink, ToolbarItemIdentifierDetails, NSToolbarSpaceItemIdentifier ];
 }
 
 - (BOOL)validateToolbarItem:(NSToolbarItem*)toolbarItem
