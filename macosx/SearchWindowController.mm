@@ -4,6 +4,7 @@
 
 #import "SearchWindowController.h"
 #import "Controller.h"
+#import "GlassPanel.h"
 #import "NSStringAdditions.h"
 #import "SearchSource.h"
 #import "Theme.h"
@@ -14,24 +15,6 @@ static CGFloat const kRowHeight = 66.0;
 static NSInteger const kHealthDots = 6;
 static NSInteger const kAllSourcesTag = -1;
 static NSInteger const kManageSourcesTag = -2;
-
-/// A borderless panel still has to be able to take the keyboard.
-@interface SearchPanel : NSPanel
-@end
-
-@implementation SearchPanel
-
-- (BOOL)canBecomeKeyWindow
-{
-    return YES;
-}
-
-- (void)cancelOperation:(id)sender
-{
-    [self orderOut:nil];
-}
-
-@end
 
 /// Row of dots showing how well seeded a result is.
 @interface SearchHealthView : NSView
@@ -152,10 +135,7 @@ static NSInteger const kManageSourcesTag = -2;
 
 - (instancetype)initWithController:(Controller*)controller
 {
-    SearchPanel* panel = [[SearchPanel alloc] initWithContentRect:NSMakeRect(0, 0, kPanelWidth, kPanelHeight)
-                                                        styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable
-                                                          backing:NSBackingStoreBuffered
-                                                            defer:YES];
+    GlassPanel* panel = [[GlassPanel alloc] initWithSize:NSMakeSize(kPanelWidth, kPanelHeight) style:NSGlassEffectViewStyleRegular];
     if ((self = [super initWithWindow:panel]))
     {
         _fController = controller;
@@ -167,27 +147,15 @@ static NSInteger const kManageSourcesTag = -2;
         configuration.HTTPAdditionalHeaders = @{ @"Accept" : @"application/json", @"User-Agent" : @"Nagare" };
         _fSession = [NSURLSession sessionWithConfiguration:configuration];
 
-        panel.opaque = NO;
-        panel.backgroundColor = NSColor.clearColor;
-        panel.hasShadow = YES;
-        panel.movableByWindowBackground = YES;
-        panel.releasedWhenClosed = NO;
-        panel.minSize = NSMakeSize(640, 360);
-        panel.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
+        panel.closesOnResignKey = YES;
         [self buildInterface:panel];
     }
     return self;
 }
 
-- (void)buildInterface:(NSPanel*)panel
+- (void)buildInterface:(GlassPanel*)panel
 {
-    NSGlassEffectView* glass = [[NSGlassEffectView alloc] initWithFrame:NSMakeRect(0, 0, kPanelWidth, kPanelHeight)];
-    glass.cornerRadius = 30;
-    panel.contentView = glass;
-
-    NSView* root = [[NSView alloc] initWithFrame:glass.bounds];
-    root.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-    glass.contentView = root;
+    NSView* root = panel.root;
 
     NSImageView* icon = [NSImageView imageViewWithImage:[Theme icon:@"Search"]];
     icon.contentTintColor = Theme.bright;
@@ -291,13 +259,10 @@ static NSInteger const kManageSourcesTag = -2;
 {
     [self reloadSources];
 
-    NSWindow* window = self.window;
+    GlassPanel* window = (GlassPanel*)self.window;
     if (!window.visible)
     {
-        NSWindow* main = self.fController != nil ? NSApp.mainWindow : nil;
-        NSRect const anchor = main != nil ? main.frame : window.screen.visibleFrame;
-        NSSize const size = window.frame.size;
-        [window setFrameOrigin:NSMakePoint(NSMidX(anchor) - size.width / 2.0, NSMaxY(anchor) - size.height - 72.0)];
+        [window placeOverMainWindow];
     }
     [window makeKeyAndOrderFront:nil];
     [window makeFirstResponder:self.fQueryField];
