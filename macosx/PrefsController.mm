@@ -926,6 +926,43 @@ static NSString* const kWebUIURLFormat = @"http://localhost:%ld/";
     tr_sessionSetCompleteVerifyEnabled(self.fHandle, enabled);
 }
 
+- (NSView*)paneNamed:(NSString*)name
+{
+    [self window]; // loads the nib
+    NSDictionary<NSString*, NSView*>* panes = @{
+        @"General" : self.fGeneralView,
+        @"Transfers" : self.fTransfersView,
+        @"Groups" : self.fGroupsView,
+        @"Bandwidth" : self.fBandwidthView,
+        @"Peers" : self.fPeersView,
+        @"Network" : self.fNetworkView,
+        @"Remote" : self.fRemoteView,
+    };
+    return panes[name];
+}
+
+- (void)chooseDownloadFolderInWindow:(NSWindow*)window completion:(void (^)(void))completion
+{
+    NSOpenPanel* panel = [NSOpenPanel openPanel];
+    panel.prompt = NSLocalizedString(@"Select", "Preferences -> Open panel prompt");
+    panel.canChooseFiles = NO;
+    panel.canChooseDirectories = YES;
+    panel.canCreateDirectories = YES;
+
+    [panel beginSheetModalForWindow:window completionHandler:^(NSInteger result) {
+        if (result == NSModalResponseOK)
+        {
+            NSString* folder = panel.URLs[0].path;
+            [self.fDefaults setObject:folder forKey:@"DownloadFolder"];
+            [self.fDefaults setBool:YES forKey:@"DownloadLocationConstant"];
+            [self.fFolderPopUp selectItemAtIndex:DownloadPopupIndexFolder];
+            [self updateShowAddMagnetWindowField];
+            tr_sessionSetDownloadDir(self.fHandle, folder.fileSystemRepresentation);
+            completion();
+        }
+    }];
+}
+
 - (void)folderSheetShow:(id)sender
 {
     NSOpenPanel* panel = [NSOpenPanel openPanel];

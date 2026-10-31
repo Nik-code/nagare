@@ -7,6 +7,7 @@
 #import "ExpandedPathToIconTransformer.h"
 #import "GroupsController.h"
 #import "NSStringAdditions.h"
+#import "Theme.h"
 #import "Torrent.h"
 
 typedef NS_ENUM(NSUInteger, PopupPriority) {
@@ -62,6 +63,8 @@ typedef NS_ENUM(NSUInteger, PopupPriority) {
 
     //disable fullscreen support
     self.window.collectionBehavior = NSWindowCollectionBehaviorFullScreenNone;
+
+    [Theme styleAddWindow:self.window nameField:self.fNameField];
 
     [self setGroupsMenu];
     [self.fGroupPopUp selectItemWithTag:self.fGroupValue];

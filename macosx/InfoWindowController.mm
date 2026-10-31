@@ -4,8 +4,8 @@
 
 #import "InfoWindowController.h"
 #import "InfoViewController.h"
-#import "InfoGeneralViewController.h"
-#import "InfoActivityViewController.h"
+#import "InfoOverviewViewController.h"
+#import "Theme.h"
 #import "InfoTrackersViewController.h"
 #import "InfoPeersViewController.h"
 #import "InfoFileViewController.h"
@@ -17,7 +17,6 @@
 typedef NSString* TabIdentifier NS_TYPED_EXTENSIBLE_ENUM;
 
 static TabIdentifier const TabIdentifierInfo = @"Info";
-static TabIdentifier const TabIdentifierActivity = @"Activity";
 static TabIdentifier const TabIdentifierTracker = @"Tracker";
 static TabIdentifier const TabIdentifierPeers = @"Peers";
 static TabIdentifier const TabIdentifierFiles = @"Files";
@@ -29,11 +28,10 @@ static NSInteger const kInvalidTag = -99;
 
 typedef NS_ENUM(NSUInteger, TabTag) {
     TabTagGeneral = 0,
-    TabTagActivity = 1,
-    TabTagTrackers = 2,
-    TabTagPeers = 3,
-    TabTagFile = 4,
-    TabTagOptions = 5
+    TabTagFile = 1,
+    TabTagPeers = 2,
+    TabTagTrackers = 3,
+    TabTagOptions = 4
 };
 
 @interface InfoWindowController ()
@@ -46,8 +44,7 @@ typedef NS_ENUM(NSUInteger, TabTag) {
 @property(nonatomic) NSInteger fCurrentTabTag;
 @property(nonatomic) IBOutlet NSSegmentedControl* fTabs;
 
-@property(nonatomic) InfoGeneralViewController* fGeneralViewController;
-@property(nonatomic) InfoActivityViewController* fActivityViewController;
+@property(nonatomic) InfoOverviewViewController* fGeneralViewController;
 @property(nonatomic) InfoTrackersViewController* fTrackersViewController;
 @property(nonatomic) InfoPeersViewController* fPeersViewController;
 @property(nonatomic) InfoFileViewController* fFileViewController;
@@ -96,36 +93,27 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     //https://github.com/transmission/transmission/issues/3486
     [[window standardWindowButton:NSWindowZoomButton] setEnabled:NO];
 
-    //set tab images and tooltips
-    void (^setImageAndToolTipForSegment)(NSImage*, NSString*, NSInteger) = ^(NSImage* image, NSString* toolTip, NSInteger segment) {
-        image.accessibilityDescription = toolTip;
-        [self.fTabs setImage:image forSegment:segment];
-        [self.fTabs.cell setToolTip:toolTip forSegment:segment];
-    };
-    setImageAndToolTipForSegment(
-        [NSImage imageWithSystemSymbolName:@"info.circle" accessibilityDescription:nil],
-        NSLocalizedString(@"General Info", "Inspector -> tab"),
-        TabTagGeneral);
-    setImageAndToolTipForSegment(
-        [NSImage imageWithSystemSymbolName:@"square.grid.3x3.fill.square" accessibilityDescription:nil],
-        NSLocalizedString(@"Activity", "Inspector -> tab"),
-        TabTagActivity);
-    setImageAndToolTipForSegment(
-        [NSImage imageWithSystemSymbolName:@"antenna.radiowaves.left.and.right" accessibilityDescription:nil],
-        NSLocalizedString(@"Trackers", "Inspector -> tab"),
-        TabTagTrackers);
-    setImageAndToolTipForSegment(
-        [NSImage imageWithSystemSymbolName:@"person.2" accessibilityDescription:nil],
-        NSLocalizedString(@"Peers", "Inspector -> tab"),
-        TabTagPeers);
-    setImageAndToolTipForSegment(
-        [NSImage imageWithSystemSymbolName:@"doc.on.doc" accessibilityDescription:nil],
+    [Theme styleWindow:window];
+    self.fNameField.font = [Theme displayFontOfSize:24];
+    self.fNoneSelectedField.font = [Theme displayFontOfSize:24];
+    self.fBasicInfoField.font = [NSFont systemFontOfSize:13];
+    self.fBasicInfoField.textColor = Theme.foreground;
+    self.fImageView.hidden = YES;
+
+    self.fTabs.segmentCount = 5;
+    NSArray<NSString*>* labels = @[
+        NSLocalizedString(@"Overview", "Inspector -> tab"),
         NSLocalizedString(@"Files", "Inspector -> tab"),
-        TabTagFile);
-    setImageAndToolTipForSegment(
-        [NSImage imageWithSystemSymbolName:@"gearshape" accessibilityDescription:nil],
+        NSLocalizedString(@"Peers", "Inspector -> tab"),
+        NSLocalizedString(@"Trackers", "Inspector -> tab"),
         NSLocalizedString(@"Options", "Inspector -> tab"),
-        TabTagOptions);
+    ];
+    for (NSUInteger index = 0; index < labels.count; ++index)
+    {
+        [self.fTabs setImage:nil forSegment:index];
+        [self.fTabs setLabel:labels[index] forSegment:index];
+        [self.fTabs setTag:index forSegment:index];
+    }
 
     //set selected tab
     self.fCurrentTabTag = kInvalidTag;
@@ -134,10 +122,6 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     if ([identifier isEqualToString:TabIdentifierInfo])
     {
         tag = TabTagGeneral;
-    }
-    else if ([identifier isEqualToString:TabIdentifierActivity])
-    {
-        tag = TabTagActivity;
     }
     else if ([identifier isEqualToString:TabIdentifierTracker])
     {
@@ -190,10 +174,6 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     if (self.fViewController == self.fOptionsViewController)
     {
         [self.fOptionsViewController checkWindowSize];
-    }
-    else if (self.fViewController == self.fActivityViewController)
-    {
-        [self.fActivityViewController checkWindowSize];
     }
 }
 
@@ -276,22 +256,12 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     case TabTagGeneral:
         if (!self.fGeneralViewController)
         {
-            self.fGeneralViewController = [[InfoGeneralViewController alloc] init];
+            self.fGeneralViewController = [[InfoOverviewViewController alloc] init];
             [self.fGeneralViewController setInfoForTorrents:self.fTorrents];
         }
 
         self.fViewController = self.fGeneralViewController;
         identifier = TabIdentifierInfo;
-        break;
-    case TabTagActivity:
-        if (!self.fActivityViewController)
-        {
-            self.fActivityViewController = [[InfoActivityViewController alloc] init];
-            [self.fActivityViewController setInfoForTorrents:self.fTorrents];
-        }
-
-        self.fViewController = self.fActivityViewController;
-        identifier = TabIdentifierActivity;
         break;
     case TabTagTrackers:
         if (!self.fTrackersViewController)
@@ -343,7 +313,7 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     NSWindow* window = self.window;
 
     window.title = [NSString
-        stringWithFormat:@"%@ — %@", self.fViewController.title, NSLocalizedString(@"Torrent Inspector", "Inspector -> title")];
+        stringWithFormat:@"%@, %@", self.fViewController.title, NSLocalizedString(@"Details", "Inspector -> title")];
 
     NSView* view = self.fViewController.view;
 
@@ -353,15 +323,7 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     CGFloat minWindowWidth = MAX(self.fMinWindowWidth, view.fittingSize.width);
 
     //special case for Activity and Options views
-    if (self.fViewController == self.fActivityViewController)
-    {
-        [self.fActivityViewController setOldHeight:oldHeight];
-        [self.fActivityViewController checkLayout];
-
-        minWindowWidth = MAX(self.fMinWindowWidth, self.fActivityViewController.fTransferView.frame.size.width);
-        viewRect = [self.fActivityViewController viewRect];
-    }
-    else if (self.fViewController == self.fOptionsViewController)
+    if (self.fViewController == self.fOptionsViewController)
     {
         [self.fOptionsViewController setOldHeight:oldHeight];
         [self.fOptionsViewController checkLayout];
@@ -402,16 +364,7 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     viewRect.size.width = NSWidth(windowRect);
     view.frame = viewRect;
 
-    if (self.fViewController == self.fActivityViewController)
-    {
-        self.fActivityViewController.view.hidden = YES;
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.fActivityViewController updateWindowLayout];
-            self.fActivityViewController.view.hidden = NO;
-        });
-    }
-    else if (self.fViewController == self.fOptionsViewController)
+    if (self.fViewController == self.fOptionsViewController)
     {
         self.fOptionsViewController.view.hidden = YES;
 
@@ -650,7 +603,6 @@ typedef NS_ENUM(NSUInteger, TabTag) {
     }
 
     [self.fGeneralViewController setInfoForTorrents:self.fTorrents];
-    [self.fActivityViewController setInfoForTorrents:self.fTorrents];
     [self.fTrackersViewController setInfoForTorrents:self.fTorrents];
     [self.fPeersViewController setInfoForTorrents:self.fTorrents];
     [self.fFileViewController setInfoForTorrents:self.fTorrents];

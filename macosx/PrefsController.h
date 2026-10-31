@@ -18,4 +18,13 @@
 
 - (void)rpcUpdatePrefs;
 
+/// One of the classic panes: General, Transfers, Groups, Bandwidth, Peers, Network or Remote.
+- (NSView*)paneNamed:(NSString*)name;
+
+- (void)chooseDownloadFolderInWindow:(NSWindow*)window completion:(void (^)(void))completion;
+- (void)applyRatioSetting:(id)sender;
+- (void)setAutoStartDownloads:(id)sender;
+- (IBAction)setDefaultForMagnets:(id)sender;
+- (IBAction)setDefaultForTorrentFiles:(id)sender;
+
 @end

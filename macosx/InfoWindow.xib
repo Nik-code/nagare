@@ -20,11 +20,11 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <window title="Torrent Inspector" allowsToolTipsWhenApplicationIsInactive="NO" restorable="NO" hidesOnDeactivate="YES" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" tabbingMode="disallowed" id="5" userLabel="InfoWindow" customClass="NSPanel">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
-            <rect key="contentRect" x="897" y="867" width="403" height="77"/>
+            <rect key="contentRect" x="897" y="867" width="520" height="124"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1728" height="1079"/>
-            <value key="minSize" type="size" width="350" height="77"/>
+            <value key="minSize" type="size" width="520" height="124"/>
             <view key="contentView" id="6">
-                <rect key="frame" x="0.0" y="0.0" width="403" height="77"/>
+                <rect key="frame" x="0.0" y="0.0" width="520" height="124"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="249" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="15" customClass="InfoTextField">
@@ -46,7 +46,7 @@
                     <imageView horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="28">
                         <rect key="frame" x="10" y="35" width="32" height="32"/>
                         <constraints>
-                            <constraint firstAttribute="width" constant="32" id="8RE-eg-dQr"/>
+                            <constraint firstAttribute="width" constant="0" id="8RE-eg-dQr"/>
                             <constraint firstAttribute="height" constant="32" id="dFT-cY-S1H"/>
                         </constraints>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSApplicationIcon" id="1482"/>
@@ -83,18 +83,18 @@
                 <constraints>
                     <constraint firstItem="29" firstAttribute="leading" secondItem="15" secondAttribute="leading" id="BNH-Tr-hFi"/>
                     <constraint firstItem="1832" firstAttribute="centerY" secondItem="28" secondAttribute="centerY" id="El1-Gz-xIm"/>
-                    <constraint firstItem="15" firstAttribute="leading" secondItem="28" secondAttribute="trailing" constant="8" symbolic="YES" id="KnI-DH-f2f"/>
+                    <constraint firstItem="15" firstAttribute="leading" secondItem="28" secondAttribute="trailing" id="KnI-DH-f2f"/>
                     <constraint firstAttribute="trailing" secondItem="1832" secondAttribute="trailing" constant="10" id="KvA-Du-d9V"/>
                     <constraint firstAttribute="trailing" secondItem="15" secondAttribute="trailing" constant="10" id="NcT-hF-ea0"/>
-                    <constraint firstAttribute="trailing" secondItem="xlT-co-gnG" secondAttribute="trailing" constant="10" id="UHq-fV-59B"/>
+                    <constraint firstAttribute="trailing" secondItem="xlT-co-gnG" secondAttribute="trailing" constant="20" id="UHq-fV-59B"/>
                     <constraint firstItem="29" firstAttribute="top" secondItem="15" secondAttribute="bottom" id="Y9O-lX-kmT"/>
                     <constraint firstItem="15" firstAttribute="top" secondItem="28" secondAttribute="top" id="eMj-JO-xBI"/>
-                    <constraint firstItem="1832" firstAttribute="leading" secondItem="28" secondAttribute="trailing" constant="8" symbolic="YES" id="kix-P7-jf3"/>
+                    <constraint firstItem="1832" firstAttribute="leading" secondItem="28" secondAttribute="trailing" id="kix-P7-jf3"/>
                     <constraint firstAttribute="trailing" secondItem="29" secondAttribute="trailing" constant="10" id="kvJ-zV-yMM"/>
-                    <constraint firstItem="28" firstAttribute="leading" secondItem="6" secondAttribute="leading" constant="10" id="lNe-yY-iVE"/>
-                    <constraint firstItem="28" firstAttribute="top" secondItem="6" secondAttribute="top" constant="10" id="nES-K0-lBd"/>
-                    <constraint firstItem="xlT-co-gnG" firstAttribute="top" secondItem="6" secondAttribute="top" constant="48" id="wUK-Q2-nIe"/>
-                    <constraint firstItem="xlT-co-gnG" firstAttribute="leading" secondItem="6" secondAttribute="leading" constant="10" id="ymb-Ls-cSo"/>
+                    <constraint firstItem="28" firstAttribute="leading" secondItem="6" secondAttribute="leading" constant="20" id="lNe-yY-iVE"/>
+                    <constraint firstItem="28" firstAttribute="top" secondItem="6" secondAttribute="top" constant="38" id="nES-K0-lBd"/>
+                    <constraint firstItem="xlT-co-gnG" firstAttribute="top" secondItem="6" secondAttribute="top" constant="90" id="wUK-Q2-nIe"/>
+                    <constraint firstItem="xlT-co-gnG" firstAttribute="leading" secondItem="6" secondAttribute="leading" constant="20" id="ymb-Ls-cSo"/>
                 </constraints>
             </view>
             <connections>

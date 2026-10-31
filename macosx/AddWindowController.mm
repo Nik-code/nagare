@@ -8,6 +8,7 @@
 #import "FileOutlineController.h"
 #import "GroupsController.h"
 #import "NSStringAdditions.h"
+#import "Theme.h"
 #import "Torrent.h"
 
 static NSTimeInterval const kUpdateSeconds = 1.0;
@@ -102,6 +103,8 @@ typedef NS_ENUM(NSUInteger, PopupPriority) {
 
     //disable fullscreen support
     self.window.collectionBehavior = NSWindowCollectionBehaviorFullScreenNone;
+
+    [Theme styleAddWindow:self.window nameField:self.fNameField];
 
     self.fIconView.image = self.torrent.icon;
 
