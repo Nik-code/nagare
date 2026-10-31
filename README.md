@@ -32,9 +32,19 @@ Nagare has no auto-updater, so it never replaces itself with anything else.
 
 Needs an Apple Silicon Mac on macOS 26 or later.
 
+With [Homebrew](https://brew.sh):
+
+```bash
+brew tap nik-code/nagare
+brew trust nik-code/nagare
+brew install --cask nagare
+```
+
+Or by hand:
+
 1. Download the disk image from the [latest release](https://github.com/Nik-code/nagare/releases/latest) and drag Nagare to Applications.
 2. Open it once. macOS will refuse it, as explained below.
-3. Go to System Settings, then Privacy & Security, and choose **Open Anyway**.
+3. Go to System Settings, then Privacy & Security, and choose **Open Anyway**. You need this step after a Homebrew install too.
 
 Or clear the download flag from Terminal:
 
