@@ -77,16 +77,27 @@ struct Sample
         [self addSubview:wordmark];
 
         _fGlass = [[NSGlassEffectView alloc] initWithFrame:NSZeroRect];
-        _fGlass.cornerRadius = 20;
+        _fGlass.cornerRadius = 22;
         _fGlass.translatesAutoresizingMaskIntoConstraints = NO;
 
         NSView* down = [self statColumn:NSLocalizedString(@"Down", "Header -> stat") value:&_fDownField unit:&_fDownUnitField];
         NSView* up = [self statColumn:NSLocalizedString(@"Up", "Header -> stat") value:&_fUpField unit:&_fUpUnitField];
         NSStackView* stats = [NSStackView stackViewWithViews:@[ down, up ]];
-        stats.spacing = 32;
-        stats.edgeInsets = NSEdgeInsetsMake(14, 20, 14, 24);
+        stats.spacing = 36;
+        stats.alignment = NSLayoutAttributeTop;
         stats.translatesAutoresizingMaskIntoConstraints = NO;
-        _fGlass.contentView = stats;
+
+        // NSStackView's own edge insets don't survive inside the glass view.
+        NSView* tile = [[NSView alloc] initWithFrame:NSZeroRect];
+        tile.translatesAutoresizingMaskIntoConstraints = NO;
+        [tile addSubview:stats];
+        [NSLayoutConstraint activateConstraints:@[
+            [stats.leadingAnchor constraintEqualToAnchor:tile.leadingAnchor constant:22],
+            [stats.trailingAnchor constraintEqualToAnchor:tile.trailingAnchor constant:-26],
+            [stats.topAnchor constraintEqualToAnchor:tile.topAnchor constant:16],
+            [stats.bottomAnchor constraintEqualToAnchor:tile.bottomAnchor constant:-16],
+        ]];
+        _fGlass.contentView = tile;
         [self addSubview:_fGlass];
 
         [NSLayoutConstraint activateConstraints:@[
@@ -123,7 +134,9 @@ struct Sample
 {
     NSTextField* titleField = [Theme labelWithFont:[NSFont systemFontOfSize:13 weight:NSFontWeightMedium] color:Theme.bright];
     titleField.stringValue = title;
-    NSTextField* number = [Theme labelWithFont:[Theme displayFontOfSize:42] color:Theme.bright];
+    NSTextField* number = [Theme labelWithFont:[Theme displayFontOfSize:44] color:Theme.bright];
+    number.lineBreakMode = NSLineBreakByClipping;
+    [number.heightAnchor constraintEqualToConstant:48].active = YES;
     NSTextField* unitField = [Theme labelWithFont:[NSFont systemFontOfSize:13] color:Theme.bright];
 
     NSStackView* line = [NSStackView stackViewWithViews:@[ number, unitField ]];
@@ -133,16 +146,17 @@ struct Sample
     NSStackView* column = [NSStackView stackViewWithViews:@[ titleField, line ]];
     column.orientation = NSUserInterfaceLayoutOrientationVertical;
     column.alignment = NSLayoutAttributeLeading;
-    column.spacing = 3;
+    column.spacing = 2;
 
     *value = number;
     *unit = unitField;
     return column;
 }
 
-- (BOOL)mouseDownCanMoveWindow
+// Dragging through the WindowServer, like a title bar, stays under the cursor between displays.
+- (void)mouseDown:(NSEvent*)event
 {
-    return YES;
+    [self.window performWindowDragWithEvent:event];
 }
 
 - (void)viewDidChangeEffectiveAppearance

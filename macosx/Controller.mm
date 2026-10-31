@@ -838,7 +838,6 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
     [self layOutMainWindow];
     //self.fTableView.usesAlternatingRowBackgroundColors = !small;
 
-    self.fWindow.movableByWindowBackground = YES;
 
 
     self.fActionButton.toolTip = NSLocalizedString(@"Shortcuts for changing global settings.", "Main window -> 1st bottom left button (action) tooltip");

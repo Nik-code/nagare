@@ -307,11 +307,6 @@ THEME_COLOR(danger, 0xa3301a, 0xff9a7a)
     self.needsDisplay = YES;
 }
 
-- (BOOL)mouseDownCanMoveWindow
-{
-    return YES;
-}
-
 - (NSView*)hitTest:(NSPoint)point
 {
     return nil;
