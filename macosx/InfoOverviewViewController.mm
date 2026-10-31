@@ -127,6 +127,15 @@ static CGFloat const kViewHeight = 372.0;
     NSArray<Torrent*>* torrents = self.fTorrents;
     Torrent* only = torrents.count == 1 ? torrents[0] : nil;
 
+    for (NSView* view in self.view.subviews)
+    {
+        view.hidden = torrents.count == 0;
+    }
+    if (torrents.count == 0)
+    {
+        return;
+    }
+
     uint64_t have = 0;
     NSUInteger peers = 0;
     CGFloat down = 0.0;

@@ -172,7 +172,7 @@
         state = NSLocalizedString(@"Downloading", "Torrent row state");
         color = Theme.accent;
         suffix = percent;
-        NSString* left = [DropletCell timeLeft:torrent.eta];
+        NSString* left = torrent.downloadRate > 0.0 ? [DropletCell timeLeft:torrent.eta] : nil;
         detail = left.length > 0 ? [NSString stringWithFormat:NSLocalizedString(@"%@ of %@  ·  %@", "Torrent row detail"), have, total, left] :
                                    [NSString stringWithFormat:NSLocalizedString(@"%@ of %@", "Torrent row detail"), have, total];
         speed = torrent.downloadRate > 0.0 ? [NSString stringForSpeed:torrent.downloadRate] : @"";

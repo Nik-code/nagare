@@ -332,6 +332,9 @@ typedef NS_ENUM(NSInteger, DropletState) {
         break;
     }
 
+    // The property returns a copy, so take one here rather than one per dot.
+    std::vector<Dot> const dots = self.dots;
+
     CGContextRef context = NSGraphicsContext.currentContext.CGContext;
     CGFloat const originY = (NSHeight(self.bounds) - (self.rows - 1) * kRowPitch) / 2.0;
     CGFloat const width = NSWidth(self.bounds) - kPadding * 2.0;
@@ -341,7 +344,7 @@ typedef NS_ENUM(NSInteger, DropletState) {
     {
         for (NSInteger y = 0; y < self.rows; ++y)
         {
-            Dot const& dot = self.dots[x * self.rows + y];
+            Dot const& dot = dots[x * self.rows + y];
             NSColor* color = main;
             switch (dot.ink)
             {
