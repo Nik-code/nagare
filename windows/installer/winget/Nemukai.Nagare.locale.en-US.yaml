@@ -1,0 +1,20 @@
+# Draft, not submitted.
+PackageIdentifier: Nemukai.Nagare
+PackageVersion: 1.1.0
+PackageLocale: en-US
+Publisher: Nemukai
+PublisherUrl: https://github.com/Nik-code
+PublisherSupportUrl: https://github.com/Nik-code/nagare/issues
+PackageName: Nagare
+PackageUrl: https://github.com/Nik-code/nagare
+License: GPL-2.0-only OR GPL-3.0-only
+LicenseUrl: https://github.com/Nik-code/nagare/blob/main/COPYING
+ShortDescription: Liquid Glass torrent client, a redesigned fork of Transmission.
+Moniker: nagare
+Tags:
+  - bittorrent
+  - magnet
+  - p2p
+  - torrent
+ManifestType: defaultLocale
+ManifestVersion: 1.10.0

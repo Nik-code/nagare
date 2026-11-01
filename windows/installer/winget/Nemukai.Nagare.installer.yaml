@@ -1,0 +1,24 @@
+# Draft, not submitted. Replace the URL if the release tag differs, and the hash with the one
+# dev/package.sh prints for the setup executable.
+PackageIdentifier: Nemukai.Nagare
+PackageVersion: 1.1.0
+MinimumOSVersion: 10.0.17763.0
+InstallerType: inno
+Scope: user
+InstallModes:
+  - interactive
+  - silent
+  - silentWithProgress
+UpgradeBehavior: install
+ElevationRequirement: elevationProhibited
+Protocols:
+  - magnet
+FileExtensions:
+  - torrent
+ReleaseDate: 2026-11-01
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/Nik-code/nagare/releases/download/v1.1.0/Nagare-1.1.0-win-x64-setup.exe
+    InstallerSha256: FF56DD78248E9881F5C40C327A4DC40BDC08DF3E23D4B47C89D9939D6EF4AA65
+ManifestType: installer
+ManifestVersion: 1.10.0
