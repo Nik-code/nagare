@@ -1247,8 +1247,8 @@ void onTorrentCompletenessChanged(tr_torrent* tor, tr_completeness status, bool 
 
     _fileWatcherQueue = nil;
 
-    //complete cleanup: this can take many seconds
-    tr_sessionClose(self.fLib);
+    //everything is saved either way, so a tracker that never answers doesn't get to hold up quitting
+    tr_sessionClose(self.fLib, 2);
 }
 
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication*)app

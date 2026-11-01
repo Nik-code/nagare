@@ -73,7 +73,7 @@ macosx/package-nagare.sh 1.0.0
 
 ## Updating from Transmission
 
-The `macosx` folder has diverged a lot, but `libtransmission` is untouched. Upstream engine and security fixes should merge cleanly; Mac interface changes will not.
+The `macosx` folder has diverged a lot. `libtransmission` carries one small change to `peer-mgr`, which shows interest in new peers at once and adds an endgame. Upstream engine and security fixes should merge cleanly; Mac interface changes will not.
 
 ## How it was made
 
