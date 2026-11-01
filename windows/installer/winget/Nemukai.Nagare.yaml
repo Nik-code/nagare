@@ -1,0 +1,6 @@
+# Draft, not submitted. See Nemukai.Nagare.installer.yaml for what to fill in at release time.
+PackageIdentifier: Nemukai.Nagare
+PackageVersion: 1.1.0
+DefaultLocale: en-US
+ManifestType: version
+ManifestVersion: 1.10.0

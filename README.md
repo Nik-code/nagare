@@ -1,6 +1,6 @@
 # Nagare
 
-Nagare (流れ, "flow") is a Liquid Glass torrent client for macOS. It is a redesigned fork of [Transmission](https://transmissionbt.com): the engine is Transmission's `libtransmission`, unchanged, and the Mac interface is new.
+Nagare (流れ, "flow") is a Liquid Glass torrent client for macOS and Windows. It is a redesigned fork of [Transmission](https://transmissionbt.com): the engine is Transmission's `libtransmission` with one small speed fix, and the interface is new.
 
 ![Nagare downloading public-domain films](docs/nagare/demo.gif)
 
@@ -30,6 +30,10 @@ Nagare has no auto-updater, so it never replaces itself with anything else.
 
 ## Install
 
+**Download:** [Mac (Apple Silicon)](https://github.com/Nik-code/nagare/releases/download/v1.1.0/Nagare-1.1.0.dmg) or [Windows (64-bit)](https://github.com/Nik-code/nagare/releases/download/v1.1.0/Nagare-1.1.0-win-x64-setup.exe). Read the notes below first, because neither build is signed by Apple or Microsoft.
+
+### Mac
+
 Needs an Apple Silicon Mac on macOS 26 or later.
 
 With [Homebrew](https://brew.sh):
@@ -57,6 +61,26 @@ xattr -dr com.apple.quarantine /Applications/Nagare.app
 
 On first launch Nagare asks macOS to make it the default for magnet links and torrent files. You can say no, and change it later in Settings.
 
+### Windows
+
+Needs 64-bit Windows 10 version 1809 or later. Nothing else: it is one small executable with no runtime to install, and it never asks for administrator rights.
+
+From the [latest release](https://github.com/Nik-code/nagare/releases/latest), take either:
+
+- **`Nagare-<version>-win-x64-setup.exe`**, which installs for your user only and adds a Start menu entry and an uninstaller.
+- **`Nagare-<version>-win-x64.zip`**, if you would rather keep `nagare.exe` wherever you like. It still keeps its settings and transfer list in `%LOCALAPPDATA%\Nagare`.
+
+> [!IMPORTANT]
+> **Nagare for Windows is not code signed.** This is a free hobby project without a paid signing certificate, so Microsoft has not vouched for it, and SmartScreen will warn you that it comes from an unknown publisher. To run it, choose **More info**, then **Run anyway**. If you would rather not trust a prebuilt app, the source is all here and you can [build it yourself](windows/README.md#building).
+
+The first time it runs, Windows Firewall will ask whether Nagare may use the network. Allowing it lets peers connect to you. Without it downloads still work, only with fewer peers.
+
+Nagare asks once whether it should open your torrent files and magnet links. Windows only lets you make that choice yourself, so saying yes opens Default Apps in Settings at the right place. You can come back to it from Nagare's Settings, which also has Start with Windows and keeping Nagare in the tray when you close the window. All three are off until you turn them on.
+
+Uninstalling removes everything Nagare added to Windows, and asks before deleting your settings and transfer list. It never touches the files you downloaded.
+
+To build it yourself, see [windows/README.md](windows/README.md).
+
 ## Building
 
 Needs macOS 26 or later and Xcode 26.
@@ -68,12 +92,12 @@ macosx/build-nagare.sh
 This builds an arm64 app and installs it to `/Applications/Nagare.app`, signed ad hoc. To make a release disk image instead:
 
 ```bash
-macosx/package-nagare.sh 1.0.0
+macosx/package-nagare.sh 1.1.0
 ```
 
 ## Updating from Transmission
 
-The `macosx` folder has diverged a lot, but `libtransmission` is untouched. Upstream engine and security fixes should merge cleanly; Mac interface changes will not.
+The `macosx` and `windows` folders have diverged a lot. `libtransmission` carries one small change to `peer-mgr`, which shows interest in new peers at once and adds an endgame. Upstream engine and security fixes should merge cleanly; Mac interface changes will not.
 
 ## How it was made
 

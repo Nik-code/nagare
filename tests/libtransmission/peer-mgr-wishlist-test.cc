@@ -333,6 +333,23 @@ TEST_F(PeerMgrWishlistTest, doesNotRequestSameBlockTwice)
     EXPECT_EQ(240U, requested.count(10, 250));
 }
 
+TEST_F(PeerMgrWishlistTest, sentRequestForBlocksAlreadyHandedOutIsHarmless)
+{
+    auto mediator = MockMediator{ *this };
+
+    // setup: one piece, all of it wanted, all of it already requested
+    mediator.block_span_[0] = { 0, 100 };
+    mediator.piece_replication_[0] = 1;
+    mediator.client_wants_piece_.insert(0);
+    auto wishlist = Wishlist{ mediator };
+    sent_request_.emit(nullptr, nullptr, { 0, 100 });
+
+    // an endgame request doubles up on those blocks, which leaves the wishlist nothing to remove
+    sent_request_.emit(nullptr, nullptr, { 0, 100 });
+
+    EXPECT_TRUE(std::empty(wishlist.next(10, PeerHasAllPieces)));
+}
+
 TEST_F(PeerMgrWishlistTest, sequentialDownload)
 {
     auto const get_spans = [this](size_t n_wanted)

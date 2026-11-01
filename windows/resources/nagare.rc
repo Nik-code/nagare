@@ -1,0 +1,36 @@
+#include <winver.h>
+
+#include "version.h"
+
+IDI_APP ICON "nagare.ico"
+
+1 24 "nagare.manifest"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION NAGARE_VERSION_PARTS
+PRODUCTVERSION NAGARE_VERSION_PARTS
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+FILEFLAGS 0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "Nemukai"
+            VALUE "FileDescription", "Nagare"
+            VALUE "FileVersion", NAGARE_VERSION_TEXT
+            VALUE "InternalName", "nagare"
+            VALUE "LegalCopyright", "GPL. See COPYING."
+            VALUE "OriginalFilename", "nagare.exe"
+            VALUE "ProductName", "Nagare"
+            VALUE "ProductVersion", NAGARE_VERSION_TEXT
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
