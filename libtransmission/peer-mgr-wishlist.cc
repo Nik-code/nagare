@@ -195,6 +195,13 @@ private:
 
             auto& unreq = it_p->unrequested;
 
+            // endgame requests double up on blocks that were handed out already
+            if (std::empty(unreq))
+            {
+                block = it_p->block_span.end;
+                continue;
+            }
+
             auto it_b_end = std::end(unreq);
             it_b_end = *std::prev(it_b_end) >= block_span.begin ? it_b_end : unreq.upper_bound(block_span.begin);
 

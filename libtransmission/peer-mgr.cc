@@ -603,11 +603,13 @@ public:
         case tr_peer_event::Type::ClientGotHave:
             s->got_have.emit(s->tor, event.pieceIndex);
             s->mark_all_upload_only_flag_dirty();
+            s->update_peer_interest(msgs, event.pieceIndex);
             break;
 
         case tr_peer_event::Type::ClientGotHaveAll:
             s->got_have_all.emit(s->tor);
             s->mark_all_upload_only_flag_dirty();
+            s->update_peer_interest(msgs);
             break;
 
         case tr_peer_event::Type::ClientGotHaveNone:
@@ -617,6 +619,7 @@ public:
         case tr_peer_event::Type::ClientGotBitfield:
             s->got_bitfield.emit(s->tor, msgs->has());
             s->mark_all_upload_only_flag_dirty();
+            s->update_peer_interest(msgs);
             break;
 
         case tr_peer_event::Type::ClientGotChoke:
@@ -704,6 +707,55 @@ public:
         return tor->session->advertisedPeerPort();
     };
 
+    // The wishlist gives each block to one peer, so the last blocks of a download can sit with a peer that
+    // has stalled while faster peers idle until the request times out. Once a peer has nothing new to ask
+    // for, let it double up on what is still in flight. Whichever copy arrives first cancels the others.
+    [[nodiscard]] std::vector<tr_block_span_t> endgame_requests(tr_peer const* const peer, size_t const n_wanted) const
+    {
+        static auto constexpr MaxPeersPerBlock = 3U;
+
+        auto spans = std::vector<tr_block_span_t>{};
+        auto n_added = size_t{};
+        for (tr_piece_index_t p = 0U, n = tor->piece_count(); p < n && n_added < n_wanted; ++p)
+        {
+            if (tor->has_piece(p) || !tor->piece_is_wanted(p) || !peer->has_piece(p))
+            {
+                continue;
+            }
+
+            auto const [begin, end] = tor->block_span_for_piece(p);
+            for (auto block = begin; block < end && n_added < n_wanted; ++block)
+            {
+                if (tor->has_block(block) || peer->active_requests.test(block))
+                {
+                    continue;
+                }
+
+                auto n_requesters = 0U;
+                for (auto const& other : peers)
+                {
+                    n_requesters += other->active_requests.test(block) ? 1U : 0U;
+                }
+
+                if (n_requesters == 0U || n_requesters >= MaxPeersPerBlock)
+                {
+                    continue;
+                }
+
+                if (!std::empty(spans) && spans.back().end == block)
+                {
+                    spans.back().end = block + 1U;
+                }
+                else
+                {
+                    spans.push_back({ block, block + 1U });
+                }
+                ++n_added;
+            }
+        }
+        return spans;
+    }
+
 private:
     void rebuild_webseeds()
     {
@@ -759,6 +811,39 @@ private:
         for (auto const& peer : peers)
         {
             maybe_send_cancel_request(peer.get(), block, no_notify);
+        }
+    }
+
+    // Interest otherwise waits for the next rechoke, so a new peer could sit idle for up to RechokePeriod
+    // before we ask it for anything.
+    void update_peer_interest(tr_peerMsgs* msgs, std::optional<tr_piece_index_t> piece = {}) const
+    {
+        if (msgs->client_is_interested() || tor->is_done() || !tor->client_can_download())
+        {
+            return;
+        }
+
+        auto const wants = [this](tr_piece_index_t const p)
+        {
+            return tor->piece_is_wanted(p) && !tor->has_piece(p);
+        };
+
+        if (piece)
+        {
+            if (wants(*piece))
+            {
+                msgs->set_interested(true);
+            }
+            return;
+        }
+
+        for (tr_piece_index_t p = 0U, n = tor->piece_count(); p < n; ++p)
+        {
+            if (msgs->has_piece(p) && wants(p))
+            {
+                msgs->set_interested(true);
+                return;
+            }
         }
     }
 
@@ -846,16 +931,7 @@ private:
         tr_announcerAddBytes(tor, TR_ANN_CORRUPT, byte_count);
     }
 
-    void on_got_metainfo()
-    {
-        // the webseed list may have changed...
-        rebuild_webseeds();
-
-        for (auto const& peer : peers)
-        {
-            peer->on_torrent_got_metainfo();
-        }
-    }
+    void on_got_metainfo();
 
     void on_torrent_started();
     void on_torrent_stopped();
@@ -1319,7 +1395,12 @@ std::vector<tr_block_span_t> tr_peerMgrGetNextRequests(tr_torrent* torrent, tr_p
     {
         return {};
     }
-    return swarm.wishlist->next(numwant, [peer](tr_piece_index_t p) { return peer->has_piece(p); });
+    auto spans = swarm.wishlist->next(numwant, [peer](tr_piece_index_t p) { return peer->has_piece(p); });
+    if (std::empty(spans) && numwant > 0U)
+    {
+        spans = swarm.endgame_requests(peer, numwant);
+    }
+    return spans;
 }
 
 namespace
@@ -1692,6 +1773,19 @@ std::vector<tr_pex> tr_peerMgrGetPeers(tr_torrent const* tor, uint8_t address_ty
 
     std::sort(std::begin(pex), std::end(pex));
     return pex;
+}
+
+void tr_swarm::on_got_metainfo()
+{
+    // the webseed list may have changed...
+    rebuild_webseeds();
+
+    for (auto const& peer : peers)
+    {
+        peer->on_torrent_got_metainfo();
+    }
+
+    manager->rechokeSoon();
 }
 
 void tr_swarm::on_torrent_started()
