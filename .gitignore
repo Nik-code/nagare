@@ -37,3 +37,7 @@ compile_commands.json
 CMakeUserPresets.json
 windows/.shots/
 windows/dist/
+
+# env files
+.env
+.env.*
